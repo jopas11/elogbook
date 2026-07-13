@@ -40,9 +40,13 @@ $where = "WHERE s.deleted_at IS NULL";
 $params = [];
 
 if (!empty($_GET['search'])) {
-    $where .= " AND (s.jenis_sparepart LIKE ? OR s.merk LIKE ? OR CAST(s.id AS CHAR) LIKE ?)";
-    $search = '%' . $_GET['search'] . '%';
-    $params = array_merge($params, [$search, $search, $search]);
+    [$ftWhere, $ftParams] = ftSearch(
+        ['s.jenis_sparepart', 's.merk', 's.type_sparepart', 's.serial_number'],
+        $_GET['search'],
+        's.id'
+    );
+    $where .= " AND ($ftWhere)";
+    $params = array_merge($params, $ftParams);
 }
 if (!empty($_GET['kategori'])) {
     $where .= " AND s.kategori = ?";
@@ -66,18 +70,7 @@ if (!empty($_GET['date_to'])) {
 }
 
 // Pagination
-$page = max(1, (int)($_GET['page'] ?? 1));
-$perPage = 15;
-$offset = ($page - 1) * $perPage;
-
-$countStmt = $db->prepare("SELECT COUNT(*) FROM spareparts s $where");
-$countStmt->execute($params);
-$totalItems = $countStmt->fetchColumn();
-$totalPages = ceil($totalItems / $perPage);
-
-$stmt = $db->prepare("SELECT s.* FROM spareparts s $where ORDER BY s.created_at DESC LIMIT $perPage OFFSET $offset");
-$stmt->execute($params);
-$spareparts = $stmt->fetchAll();
+[$spareparts, $page, $totalPages] = paginate($db, "SELECT s.* FROM spareparts s $where ORDER BY s.created_at DESC", $params);
 
 $jenisList = $db->query("SELECT nama FROM jenis_spareparts WHERE type IS NULL ORDER BY nama")->fetchAll(PDO::FETCH_COLUMN);
 $typeList = $db->query("SELECT nama, type FROM jenis_spareparts WHERE type IS NOT NULL ORDER BY nama, type")->fetchAll();
@@ -89,7 +82,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 <div x-data="dashboard()" class="page-enter">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Dashboard</span>
     </nav>
@@ -222,7 +215,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
     <!-- Filters -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
-        <form method="GET" class="flex flex-wrap gap-3 items-end">
+        <form method="GET" action="index.php" class="flex flex-wrap gap-3 items-end">
+            <input type="hidden" name="url" value="dashboard">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
                 <input type="text" name="search" value="<?= escape($_GET['search'] ?? '') ?>" placeholder="ID, jenis, merk..." class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
@@ -266,7 +260,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg text-sm hover:bg-primary-900 transition font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-filter"></i> Filter
                 </button>
-                <a href="dashboard.php" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
+                <a href="<?= pageUrl('dashboard.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-rotate"></i> Reset
                 </a>
             </div>
@@ -329,19 +323,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 </tbody>
             </table>
         </div>
-        <?php if ($totalPages > 1): ?>
-        <div class="flex justify-between items-center px-4 py-3 border-t border-gray-100 dark:border-gray-700">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Halaman <?= $page ?> dari <?= $totalPages ?></p>
-            <div class="flex gap-1">
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                <a href="?page=<?= $i ?>&<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>" 
-                   class="px-3 py-1 rounded-lg text-sm font-medium transition <?= $i === $page ? 'bg-primary-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' ?>">
-                    <?= $i ?>
-                </a>
-                <?php endfor; ?>
-            </div>
-        </div>
-        <?php endif; ?>
+        <?= renderPagination($page, $totalPages) ?>
     </div>
 
     <!-- Mobile Cards -->
@@ -384,16 +366,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             </div>
             <?php endforeach; ?>
         <?php endif; ?>
-        <?php if ($totalPages > 1): ?>
-        <div class="flex justify-center gap-1 pt-2">
-            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-            <a href="?page=<?= $i ?>&<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>" 
-               class="px-3 py-1.5 rounded-lg text-sm font-medium transition <?= $i === $page ? 'bg-primary-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' ?>">
-                <?= $i ?>
-            </a>
-            <?php endfor; ?>
-        </div>
-        <?php endif; ?>
+        <?= renderPagination($page, $totalPages) ?>
     </div>
 </div>
 
@@ -444,15 +417,15 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Serial Number <span class="text-red-500">*</span></label>
-                    <div class="flex">
-                        <span class="inline-flex items-center px-3 py-2 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium">SN</span>
-                        <input type="text" name="serial_number" required class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-r-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition" placeholder="nomor">
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity <span class="text-red-500">*</span></label>
+                    <input type="number" name="quantity" id="input-qty" value="1" min="1" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity <span class="text-red-500">*</span></label>
-                    <input type="number" name="quantity" value="1" min="1" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Serial Number <span class="text-red-500">*</span></label>
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 dark:border-gray-600 dark:bg-gray-600 bg-gray-100 text-gray-600 dark:text-gray-300 rounded-l-lg text-sm font-mono select-none">SN</span>
+                        <input type="text" name="serial_number" required class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-r-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition font-mono" value="<?= escape(old('serial_number')) ?>">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal <span class="text-red-500">*</span></label>
@@ -496,6 +469,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
 </div>
 
 <script>
+    const CSRF_TOKEN = '<?= csrfToken() ?>';
+
     document.addEventListener('alpine:init', () => {
         Alpine.data('dashboard', () => ({
             init() {
@@ -586,6 +561,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         html: `
                             <form id="editForm" class="text-left space-y-3">
                                 <input type="hidden" name="id" value="${data.data.id}">
+                                <input type="hidden" name="csrf_token" value="${CSRF_TOKEN}">
                                 <div>
                                     <label class="text-xs font-medium">Kategori</label>
                                     <select name="kategori" class="w-full px-3 py-2 border rounded-lg text-sm">
@@ -603,10 +579,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium">Serial Number</label>
-                                    <div class="flex">
-                                        <span class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 rounded-l-lg bg-gray-100 text-gray-600 text-xs font-medium">SN</span>
-                                        <input type="text" name="serial_number" value="${escapeHtml((data.data.serial_number || '').replace(/^SN/, ''))}" class="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg text-sm">
-                                    </div>
+                                    <input type="text" name="serial_number" value="${escapeHtml(data.data.serial_number || '')}" class="w-full px-3 py-2 border rounded-lg text-sm">
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium">Quantity</label>
@@ -646,7 +619,6 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         preConfirm: () => {
                             const form = document.getElementById('editForm');
                             const formData = new FormData(form);
-                            formData.append('_method', 'PUT');
                             return fetch('index.php?url=sparepart&action=update&id=' + id, {
                                 method: 'POST',
                                 body: formData
@@ -673,7 +645,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 }).then(result => {
                     if (result.isConfirmed) {
                         window.dispatchEvent(new CustomEvent('loading-start'));
-                        fetch('index.php?url=sparepart&action=destroy&id=' + id, { method: 'POST' })
+                        const formData = new FormData();
+                        formData.append('csrf_token', CSRF_TOKEN);
+                        fetch('index.php?url=sparepart&action=destroy&id=' + id, {
+                            method: 'POST',
+                            body: formData
+                        })
                             .then(r => r.json())
                             .then(data => {
                                 window.dispatchEvent(new CustomEvent('loading-end'));
@@ -704,6 +681,6 @@ require_once __DIR__ . '/../includes/sidebar.php';
         return div.innerHTML;
     }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2"></script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

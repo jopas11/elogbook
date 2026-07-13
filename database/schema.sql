@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role ENUM('admin','user') DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FULLTEXT INDEX ft_users (name, email) WITH PARSER ngram
 );
 
 CREATE TABLE IF NOT EXISTS jenis_spareparts (
@@ -34,7 +35,8 @@ CREATE TABLE IF NOT EXISTS spareparts (
     keterangan TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FULLTEXT INDEX ft_spareparts (jenis_sparepart, merk, type_sparepart, serial_number) WITH PARSER ngram
 );
 
 CREATE TABLE IF NOT EXISTS logbooks (
@@ -49,6 +51,12 @@ CREATE TABLE IF NOT EXISTS logbooks (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FULLTEXT INDEX ft_logbooks (pic_penerima) WITH PARSER ngram,
     FOREIGN KEY (sparepart_id) REFERENCES spareparts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Migration for existing databases (run if upgrading):
+-- ALTER TABLE spareparts ADD FULLTEXT INDEX ft_spareparts (jenis_sparepart, merk, type_sparepart, serial_number) WITH PARSER ngram;
+-- ALTER TABLE users ADD FULLTEXT INDEX ft_users (name, email) WITH PARSER ngram;
+-- ALTER TABLE logbooks ADD FULLTEXT INDEX ft_logbooks (pic_penerima) WITH PARSER ngram;

@@ -16,16 +16,28 @@ if (empty($url) || $url === 'index.php') {
 }
 
 $page = $url . '.php';
-$paths = [
-    __DIR__ . '/pages/' . $page,
-    __DIR__ . '/actions/' . $page,
-];
 
-foreach ($paths as $pagePath) {
-    if (file_exists($pagePath)) {
-        require $pagePath;
+// POST requests → handle via actions/ first
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $actionPath = __DIR__ . '/actions/' . $page;
+    if (file_exists($actionPath)) {
+        require $actionPath;
         return;
     }
+}
+
+// GET requests (or POST without action file) → load from pages/
+$pagePath = __DIR__ . '/pages/' . $page;
+if (file_exists($pagePath)) {
+    require $pagePath;
+    return;
+}
+
+// Fallback to actions/ if not in pages/
+$actionPath = __DIR__ . '/actions/' . $page;
+if (file_exists($actionPath)) {
+    require $actionPath;
+    return;
 }
 
 http_response_code(404);

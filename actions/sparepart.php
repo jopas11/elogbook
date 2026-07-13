@@ -46,33 +46,50 @@ if ($action === 'store') {
         redirect('dashboard.php');
     }
 
-    $data = [
-        'kategori' => $_POST['kategori'] ?? 'Aset',
-        'jenis_sparepart' => trim($_POST['jenis_sparepart'] ?? ''),
-        'type_sparepart' => trim($_POST['type_sparepart'] ?? ''),
-        'serial_number' => 'SN' . trim($_POST['serial_number'] ?? ''),
-        'quantity' => (int)($_POST['quantity'] ?? 1),
-        'tanggal' => $_POST['tanggal'] ?? date('Y-m-d'),
-        'merk' => trim($_POST['merk'] ?? ''),
-        'pic' => trim($_POST['pic'] ?? ''),
-        'department' => trim($_POST['department'] ?? ''),
-        'status' => $_POST['status'] ?? 'Tersedia',
-        'keterangan' => trim($_POST['keterangan'] ?? ''),
-    ];
+    $kategori = $_POST['kategori'] ?? 'Aset';
+    $jenis_sparepart = trim($_POST['jenis_sparepart'] ?? '');
+    $type_sparepart = trim($_POST['type_sparepart'] ?? '');
+    $quantity = (int)($_POST['quantity'] ?? 1);
+    $tanggal = $_POST['tanggal'] ?? date('Y-m-d');
+    $merk = trim($_POST['merk'] ?? '');
+    $pic = trim($_POST['pic'] ?? '');
+    $department = trim($_POST['department'] ?? '');
+    $status = $_POST['status'] ?? 'Tersedia';
+    $keterangan = trim($_POST['keterangan'] ?? '');
 
+    // Parse SNs: comma-separated numbers, auto-prefix "SN-"
+    $raw = array_map('trim', explode(',', trim($_POST['serial_number'] ?? '')));
+    $raw = array_filter($raw, fn($v) => $v !== '');
+    $serialNumbers = array_map(fn($v) => 'SN-' . $v, $raw);
+
+    if (count($serialNumbers) !== $quantity) {
+        flash('error', 'Jumlah serial number (' . count($serialNumbers) . ') tidak sama dengan quantity (' . $quantity . ').');
+        redirect('dashboard.php');
+    }
+
+    $inserted = 0;
+    $db->beginTransaction();
     try {
-        $stmt = $db->prepare("INSERT INTO spareparts (kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute(array_values($data));
-        $sparepartId = $db->lastInsertId();
+        $stmt = $db->prepare("INSERT INTO spareparts (kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)");
+
+        foreach ($serialNumbers as $sn) {
+            $stmt->execute([$kategori, $jenis_sparepart, $type_sparepart, $sn, $tanggal, $merk, $pic, $department, $status, $keterangan]);
+            $inserted++;
+        }
+
+        $db->commit();
 
         // Log
-        $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, tipe_transaksi, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, 'Barang Masuk', ?, ?, ?, ?)");
-        $stmt->execute([$sparepartId, $user['id'], $data['pic'], $data['department'], $data['tanggal'], 'Barang masuk: ' . $data['jenis_sparepart'] . ' (' . $data['merk'] . ')']);
+        if ($inserted > 0) {
+            $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, tipe_transaksi, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, 'Barang Masuk', ?, ?, ?, ?)");
+            $stmt->execute([$db->lastInsertId(), $user['id'], $pic, $department, $tanggal, 'Barang masuk: ' . $jenis_sparepart . ' (' . $merk . ') x' . $inserted]);
+        }
 
-        flash('success', 'Sparepart berhasil ditambahkan.');
+        flash('success', $inserted . ' sparepart berhasil ditambahkan.');
     } catch (PDOException $e) {
+        $db->rollBack();
         if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'serial_number')) {
-            flash('error', 'Serial number sudah terdaftar.');
+            flash('error', 'Serial number "' . $sn . '" sudah terdaftar.');
         } else {
             flash('error', 'Gagal menambah sparepart.');
         }
@@ -86,6 +103,10 @@ if ($action === 'update') {
         echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
         exit;
     }
+    if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
+        echo json_encode(['success' => false, 'message' => 'Token CSRF tidak valid.']);
+        exit;
+    }
     $id = (int)($_GET['id'] ?? 0);
     try {
         $stmt = $db->prepare("UPDATE spareparts SET kategori=?, jenis_sparepart=?, type_sparepart=?, serial_number=?, quantity=?, merk=?, pic=?, department=?, status=?, keterangan=? WHERE id=? AND deleted_at IS NULL");
@@ -93,7 +114,7 @@ if ($action === 'update') {
             $_POST['kategori'] ?? 'Aset',
             trim($_POST['jenis_sparepart'] ?? ''),
             trim($_POST['type_sparepart'] ?? ''),
-            'SN' . trim($_POST['serial_number'] ?? ''),
+            trim($_POST['serial_number'] ?? ''),
             (int)($_POST['quantity'] ?? 1),
             trim($_POST['merk'] ?? ''),
             trim($_POST['pic'] ?? ''),
@@ -113,6 +134,10 @@ if ($action === 'destroy') {
     header('Content-Type: application/json');
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isAdmin()) {
         echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+        exit;
+    }
+    if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
+        echo json_encode(['success' => false, 'message' => 'Token CSRF tidak valid.']);
         exit;
     }
     $id = (int)($_GET['id'] ?? 0);

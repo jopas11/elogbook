@@ -23,7 +23,7 @@
         </div>
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-2 animate-fade-up delay-1">Halaman Tidak Ditemukan</h1>
         <p class="text-gray-500 dark:text-gray-400 mb-8 animate-fade-up delay-1">Halaman yang Anda cari tidak tersedia atau telah dipindahkan.</p>
-        <a href="dashboard.php" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-800 text-white rounded-xl hover:bg-primary-900 transition font-medium shadow-lg shadow-primary-800/20 animate-fade-up delay-2">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-800 text-white rounded-xl hover:bg-primary-900 transition font-medium shadow-lg shadow-primary-800/20 animate-fade-up delay-2">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
         </a>
     </div>

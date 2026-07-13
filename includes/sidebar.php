@@ -52,11 +52,7 @@
                 <i class="fa-solid fa-gauge-high w-5 text-center"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="<?= pageUrl('permintaan.php') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition <?= $currentPage === 'permintaan' ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
-                <i class="fa-solid fa-file-import w-5 text-center"></i>
-                <span>Permintaan</span>
-            </a>
-            <a href="<?= pageUrl('ubah_status.php') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition <?= $currentPage === 'ubah_status' ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
+<a href="<?= pageUrl('ubah_status.php') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition <?= $currentPage === 'ubah_status' ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
                 <i class="fa-solid fa-arrows-rotate w-5 text-center"></i>
                 <span>Ubah Status</span>
             </a>

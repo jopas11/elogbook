@@ -6,42 +6,19 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $db = getDB();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $sparepartId = (int)($_POST['sparepart_id'] ?? 0);
-    $pic = trim($_POST['pic'] ?? '');
-    $department = trim($_POST['department'] ?? '');
-    $tanggal = $_POST['tanggal'] ?? date('Y-m-d');
-    $keterangan = trim($_POST['keterangan'] ?? '');
-
-    $stmt = $db->prepare("SELECT * FROM spareparts WHERE id = ? AND status = 'Tersedia' AND deleted_at IS NULL");
-    $stmt->execute([$sparepartId]);
-    $sparepart = $stmt->fetch();
-
-    if (!$sparepart) {
-        flash('error', 'Sparepart tidak tersedia.');
-        redirect('sparepart_keluar.php');
-    }
-
-    $db->prepare("UPDATE spareparts SET status = 'Terpakai', pic = ?, department = ? WHERE id = ?")->execute([$pic, $department, $sparepartId]);
-
-    $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, tipe_transaksi, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, 'Barang Keluar', ?, ?, ?, ?)");
-    $stmt->execute([$sparepartId, $user['id'], $pic, $department, $tanggal, $keterangan ?: 'Barang keluar: ' . $sparepart['jenis_sparepart']]);
-
-    flash('success', 'Sparepart berhasil diambil.');
-    redirect('sparepart_keluar.php');
-}
-
 $search = $_GET['search'] ?? '';
 $where = "WHERE status = 'Tersedia' AND deleted_at IS NULL";
 $params = [];
 if ($search) {
-    $where .= " AND (jenis_sparepart LIKE ? OR merk LIKE ? OR CAST(id AS CHAR) LIKE ?)";
-    $s = '%' . $search . '%';
-    $params = [$s, $s, $s];
+    [$ftWhere, $params] = ftSearch(
+        ['jenis_sparepart', 'merk', 'type_sparepart', 'serial_number'],
+        $search,
+        'id'
+    );
+    $where .= " AND ($ftWhere)";
 }
-$stmt = $db->prepare("SELECT * FROM spareparts $where ORDER BY created_at DESC");
-$stmt->execute($params);
-$spareparts = $stmt->fetchAll();
+$baseQuery = "SELECT * FROM spareparts $where ORDER BY created_at DESC";
+[$spareparts, $page, $totalPages] = paginate($db, $baseQuery, $params);
 
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/sidebar.php';
@@ -49,7 +26,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="sparepartKeluar()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Sparepart Keluar</span>
     </nav>
@@ -59,7 +36,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
-        <form method="GET" class="flex gap-3 items-end">
+        <form method="GET" action="index.php" class="flex gap-3 items-end">
+            <input type="hidden" name="url" value="sparepart_keluar">
             <div class="flex-1">
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
                 <input type="text" name="search" value="<?= escape($search) ?>" placeholder="ID, jenis, merk..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
@@ -68,7 +46,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <i class="fa-solid fa-search"></i> Cari
             </button>
             <?php if ($search): ?>
-            <a href="sparepart_keluar.php" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
+            <a href="<?= pageUrl('sparepart_keluar.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
                 <i class="fa-solid fa-rotate"></i> Reset
             </a>
             <?php endif; ?>
@@ -100,7 +78,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape($sp['serial_number'] ?? '-') ?></td>
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300"><?= $sp['quantity'] ?></td>
                         <td class="px-4 py-3 text-center">
-                            <button @click="openAmbil(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['merk'] ?? '') ?>')" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition font-medium inline-flex items-center gap-1">
+                            <button @click="openAmbil(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['merk'] ?? '') ?>', <?= $sp['quantity'] ?>)" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition font-medium inline-flex items-center gap-1">
                                 <i class="fa-solid fa-right-from-bracket"></i> Ambil
                             </button>
                         </td>
@@ -116,13 +94,14 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         </td>
                     </tr>
                     <?php endif; ?>
-                </tbody>
-            </table>
+            </tbody>
+                </table>
+            </div>
+            <?= renderPagination($page, $totalPages) ?>
         </div>
-    </div>
 
-    <!-- Mobile -->
-    <div class="md:hidden space-y-3">
+        <!-- Mobile -->
+        <div class="md:hidden space-y-3">
         <?php if (empty($spareparts)): ?>
         <div class="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-500">
             <i class="fa-solid fa-box-open text-4xl"></i>
@@ -138,12 +117,13 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     </div>
                     <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full font-medium">Qty: <?= $sp['quantity'] ?></span>
                 </div>
-                <button @click="openAmbil(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['merk'] ?? '') ?>')" class="w-full mt-2 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition font-medium inline-flex items-center justify-center gap-1.5">
+                <button @click="openAmbil(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['merk'] ?? '') ?>', <?= $sp['quantity'] ?>)" class="w-full mt-2 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition font-medium inline-flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-right-from-bracket"></i> Ambil
                 </button>
             </div>
             <?php endforeach; ?>
         <?php endif; ?>
+        <?= renderPagination($page, $totalPages) ?>
     </div>
 </div>
 
@@ -161,10 +141,16 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
         </div>
         <form method="POST" class="p-6 space-y-4">
+            <?= csrf() ?>
             <input type="hidden" name="sparepart_id" :value="sp.id">
             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-2">
                 <p class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Sparepart:</span> <span x-text="sp.jenis"></span></p>
                 <p class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Merk:</span> <span x-text="sp.merk || '-'"></span></p>
+                <p class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Tersedia:</span> <span x-text="sp.qty"></span></p>
+            </div>
+            <div x-show="sp.qty > 1">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Ambil</label>
+                <input type="number" name="quantity" value="1" min="1" :max="sp.qty" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PIC Penerima <span class="text-red-500">*</span></label>
@@ -195,9 +181,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('sparepartKeluar', () => ({
-            openAmbil(id, jenis, merk) {
+            openAmbil(id, jenis, merk, qty) {
                 window.dispatchEvent(new CustomEvent('open-ambil', {
-                    detail: { id, jenis, merk }
+                    detail: { id, jenis, merk, qty }
                 }));
             }
         }));

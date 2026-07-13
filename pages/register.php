@@ -11,35 +11,41 @@ if (isset($_SESSION['user'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
+        $error = 'Token CSRF tidak valid. Silakan coba lagi.';
+    }
+
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $password_confirmation = $_POST['password_confirmation'] ?? '';
 
-    if (empty($name) || empty($email) || empty($password)) {
-        $error = 'Semua field wajib diisi.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Format email tidak valid.';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password minimal 6 karakter.';
-    } elseif ($password !== $password_confirmation) {
-        $error = 'Konfirmasi password tidak cocok.';
-    } else {
-        try {
-            $db = getDB();
-            $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
-            $stmt->execute([$email]);
-            if ($stmt->fetch()) {
-                $error = 'Email sudah terdaftar.';
-            } else {
-                $hashed = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'user')");
-                $stmt->execute([$name, $email, $hashed]);
-                flash('success', 'Pendaftaran berhasil. Silakan login.');
-                redirect('login.php');
+    if (!$error) {
+        if (empty($name) || empty($email) || empty($password)) {
+            $error = 'Semua field wajib diisi.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = 'Format email tidak valid.';
+        } elseif (strlen($password) < 6) {
+            $error = 'Password minimal 6 karakter.';
+        } elseif ($password !== $password_confirmation) {
+            $error = 'Konfirmasi password tidak cocok.';
+        } else {
+            try {
+                $db = getDB();
+                $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                if ($stmt->fetch()) {
+                    $error = 'Email sudah terdaftar.';
+                } else {
+                    $hashed = password_hash($password, PASSWORD_DEFAULT);
+                    $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'user')");
+                    $stmt->execute([$name, $email, $hashed]);
+                    flash('success', 'Pendaftaran berhasil. Silakan login.');
+                    redirect('login.php');
+                }
+            } catch (PDOException $e) {
+                $error = 'Terjadi kesalahan sistem.';
             }
-        } catch (PDOException $e) {
-            $error = 'Terjadi kesalahan sistem.';
         }
     }
 }
@@ -51,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar — <?= APP_NAME ?></title>
     <script>if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');</script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -82,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" class="space-y-4">
+                <?= csrf() ?>
                 <div class="animate-fade-in delay-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
                     <div class="relative">

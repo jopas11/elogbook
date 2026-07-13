@@ -45,16 +45,23 @@ function hasFlash(string $key): bool {
 }
 
 function csrf(): string {
-    $token = bin2hex(random_bytes(32));
-    $_SESSION['csrf_token'] = $token;
-    return '<input type="hidden" name="csrf_token" value="' . $token . '">';
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return '<input type="hidden" name="csrf_token" value="' . $_SESSION['csrf_token'] . '">';
+}
+
+function csrfToken(): string {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
 }
 
 function verifyCsrf(string $token): bool {
     if (empty($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
         return false;
     }
-    unset($_SESSION['csrf_token']);
     return true;
 }
 
@@ -93,4 +100,66 @@ function getRoleBadge(string $role): string {
         return '<span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">Admin</span>';
     }
     return '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">User</span>';
+}
+
+function renderPagination(int $currentPage, int $totalPages, array $queryParams = []): string {
+    if ($totalPages <= 1) return '';
+
+    $params = array_merge($_GET, $queryParams, ['page' => $currentPage]);
+    $html = '<div class="flex flex-col sm:flex-row justify-between items-center gap-3 px-4 py-3 border-t border-gray-100 dark:border-gray-700">';
+    $html .= '<p class="text-sm text-gray-500 dark:text-gray-400">Halaman ' . $currentPage . ' dari ' . $totalPages . '</p>';
+    $html .= '<div class="flex gap-1 flex-wrap">';
+
+    for ($i = 1; $i <= $totalPages; $i++) {
+        $params['page'] = $i;
+        $url = '?' . http_build_query($params);
+        $active = $i === $currentPage ? 'bg-primary-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600';
+        $html .= '<a href="' . $url . '" class="px-3 py-1 rounded-lg text-sm font-medium transition ' . $active . '">' . $i . '</a>';
+    }
+
+    $html .= '</div></div>';
+    return $html;
+}
+
+function paginate(PDO $db, string $baseQuery, array $params, int $perPage = 15): array {
+    $page = max(1, (int)($_GET['page'] ?? 1));
+    $offset = ($page - 1) * $perPage;
+
+    $countStmt = $db->prepare("SELECT COUNT(*) FROM ($baseQuery) _count");
+    $countStmt->execute($params);
+    $totalItems = (int)$countStmt->fetchColumn();
+    $totalPages = (int)ceil($totalItems / $perPage);
+
+    $dataStmt = $db->prepare("$baseQuery LIMIT $perPage OFFSET $offset");
+    $dataStmt->execute($params);
+    $data = $dataStmt->fetchAll();
+
+    return [$data, $page, $totalPages];
+}
+
+/**
+ * Build FULLTEXT search condition + params with Ngram support.
+ * Falls back to LIKE for short terms (< 2 chars).
+ */
+function ftSearch(array $fulltextCols, string $searchTerm, ?string $idCol = null): array {
+    $clean = trim(preg_replace('/[+\-><\(\)~*\"@\.]+/u', ' ', $searchTerm));
+
+    if (mb_strlen($clean) >= 2) {
+        $words = array_filter(explode(' ', $clean), fn($w) => trim($w) !== '');
+        $terms = array_map(fn($w) => '+' . trim($w) . '*', $words);
+        $cols = implode(', ', $fulltextCols);
+        $condition = "MATCH($cols) AGAINST(? IN BOOLEAN MODE)";
+        $params = [implode(' ', $terms)];
+    } else {
+        $likes = array_map(fn($c) => "$c LIKE ?", $fulltextCols);
+        $condition = '(' . implode(' OR ', $likes) . ')';
+        $params = array_fill(0, count($fulltextCols), '%' . $searchTerm . '%');
+    }
+
+    if ($idCol) {
+        $condition .= " OR CAST($idCol AS CHAR) LIKE ?";
+        $params[] = '%' . $searchTerm . '%';
+    }
+
+    return [$condition, $params];
 }

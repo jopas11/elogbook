@@ -6,67 +6,13 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $db = getDB();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-
-    if ($action === 'update_profile') {
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        if ($name && $email) {
-            try {
-                $stmt = $db->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
-                $stmt->execute([$name, $email, $user['id']]);
-                $_SESSION['user']['name'] = $name;
-                $_SESSION['user']['email'] = $email;
-                flash('success', 'Profile berhasil diupdate.');
-            } catch (PDOException $e) {
-                flash('error', 'Email sudah digunakan.');
-            }
-        }
-    } elseif ($action === 'update_password') {
-        $current = $_POST['current_password'] ?? '';
-        $new = $_POST['new_password'] ?? '';
-        $confirm = $_POST['new_password_confirmation'] ?? '';
-
-        $stmt = $db->prepare("SELECT password FROM users WHERE id = ?");
-        $stmt->execute([$user['id']]);
-        $data = $stmt->fetch();
-
-        if (!password_verify($current, $data['password'])) {
-            flash('error', 'Password saat ini salah.');
-        } elseif (strlen($new) < 6) {
-            flash('error', 'Password baru minimal 6 karakter.');
-        } elseif ($new !== $confirm) {
-            flash('error', 'Konfirmasi password tidak cocok.');
-        } else {
-            $hashed = password_hash($new, PASSWORD_DEFAULT);
-            $db->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$hashed, $user['id']]);
-            flash('success', 'Password berhasil diubah.');
-        }
-    } elseif ($action === 'delete_account') {
-        $password = $_POST['password'] ?? '';
-        $stmt = $db->prepare("SELECT password FROM users WHERE id = ?");
-        $stmt->execute([$user['id']]);
-        $data = $stmt->fetch();
-
-        if (password_verify($password, $data['password'])) {
-            $db->prepare("DELETE FROM users WHERE id = ?")->execute([$user['id']]);
-            session_destroy();
-            redirect('login.php');
-        } else {
-            flash('error', 'Password salah.');
-        }
-    }
-    redirect('profile.php');
-}
-
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <div x-data="{ showDeleteModal: false }" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Profile</span>
     </nav>
@@ -79,6 +25,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Informasi Profile</h3>
             <form method="POST" class="space-y-4">
+                <?= csrf() ?>
                 <input type="hidden" name="action" value="update_profile">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
@@ -97,6 +44,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Ubah Password</h3>
             <form method="POST" class="space-y-4">
+                <?= csrf() ?>
                 <input type="hidden" name="action" value="update_password">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Saat Ini</label>
@@ -133,6 +81,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <h3 class="text-lg font-bold text-red-600 dark:text-red-400 mb-4">Konfirmasi Hapus Akun</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Masukkan password untuk menghapus akun.</p>
             <form method="POST">
+                <?= csrf() ?>
                 <input type="hidden" name="action" value="delete_account">
                 <input type="password" name="password" required placeholder="Password Anda" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none transition mb-4">
                 <div class="flex justify-end gap-2">

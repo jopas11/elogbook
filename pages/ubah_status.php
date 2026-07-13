@@ -6,52 +6,19 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $db = getDB();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $sparepartId = (int)($_POST['sparepart_id'] ?? 0);
-    $statusBaru = $_POST['status_baru'] ?? '';
-    $tanggal = $_POST['tanggal'] ?? date('Y-m-d');
-    $pic = trim($_POST['pic'] ?? '');
-    $department = trim($_POST['department'] ?? '');
-    $keterangan = trim($_POST['keterangan'] ?? '');
-
-    $validStatus = ['Tersedia', 'Terpakai', 'Rusak', 'Dalam Perbaikan'];
-    if (!in_array($statusBaru, $validStatus)) {
-        flash('error', 'Status tidak valid.');
-        redirect('ubah_status.php');
-    }
-
-    $stmt = $db->prepare("SELECT * FROM spareparts WHERE id = ? AND deleted_at IS NULL");
-    $stmt->execute([$sparepartId]);
-    $sparepart = $stmt->fetch();
-
-    if (!$sparepart) {
-        flash('error', 'Sparepart tidak ditemukan.');
-        redirect('ubah_status.php');
-    }
-
-    $statusLama = $sparepart['status'];
-
-    $db->prepare("UPDATE spareparts SET status = ?, pic = ?, department = ?, keterangan = ? WHERE id = ?")->execute([$statusBaru, $pic, $department, $keterangan, $sparepartId]);
-
-    $tipeTransaksi = $statusBaru === 'Dalam Perbaikan' ? 'Dalam Perbaikan' : 'Ubah Status';
-    $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, tipe_transaksi, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$sparepartId, $user['id'], $tipeTransaksi, $pic, $department, $tanggal, "Status berubah dari $statusLama ke $statusBaru. $keterangan"]);
-
-    flash('success', 'Status sparepart berhasil diubah.');
-    redirect('ubah_status.php');
-}
-
 $search = $_GET['search'] ?? '';
 $where = "WHERE deleted_at IS NULL";
 $params = [];
 if ($search) {
-    $where .= " AND (jenis_sparepart LIKE ? OR merk LIKE ? OR CAST(id AS CHAR) LIKE ?)";
-    $s = '%' . $search . '%';
-    $params = [$s, $s, $s];
+    [$ftWhere, $params] = ftSearch(
+        ['jenis_sparepart', 'merk', 'type_sparepart', 'serial_number'],
+        $search,
+        'id'
+    );
+    $where .= " AND ($ftWhere)";
 }
-$stmt = $db->prepare("SELECT * FROM spareparts $where ORDER BY created_at DESC");
-$stmt->execute($params);
-$spareparts = $stmt->fetchAll();
+$baseQuery = "SELECT * FROM spareparts $where ORDER BY created_at DESC";
+[$spareparts, $page, $totalPages] = paginate($db, $baseQuery, $params);
 
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/sidebar.php';
@@ -59,7 +26,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="ubahStatus()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Ubah Status</span>
     </nav>
@@ -69,7 +36,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
-        <form method="GET" class="flex gap-3 items-end">
+        <form method="GET" action="index.php" class="flex gap-3 items-end">
+            <input type="hidden" name="url" value="ubah_status">
             <div class="flex-1">
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari Sparepart</label>
                 <input type="text" name="search" value="<?= escape($search) ?>" placeholder="ID, jenis, merk..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
@@ -78,7 +46,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <i class="fa-solid fa-search"></i> Cari
             </button>
             <?php if ($search): ?>
-            <a href="ubah_status.php" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
+            <a href="<?= pageUrl('ubah_status.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
                 <i class="fa-solid fa-rotate"></i> Reset
             </a>
             <?php endif; ?>
@@ -124,12 +92,13 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         </td>
                     </tr>
                     <?php endif; ?>
-                </tbody>
-            </table>
+            </tbody>
+                </table>
+            </div>
+            <?= renderPagination($page, $totalPages) ?>
         </div>
-    </div>
 
-    <!-- Mobile Cards -->
+        <!-- Mobile Cards -->
     <div class="md:hidden space-y-3">
         <?php if (empty($spareparts)): ?>
         <div class="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-500">
@@ -152,6 +121,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             </div>
             <?php endforeach; ?>
         <?php endif; ?>
+        <?= renderPagination($page, $totalPages) ?>
     </div>
 </div>
 
@@ -169,6 +139,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
         </div>
         <form method="POST" class="p-6 space-y-4">
+            <?= csrf() ?>
             <input type="hidden" name="sparepart_id" :value="sp.id">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status Saat Ini</label>

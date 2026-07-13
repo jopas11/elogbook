@@ -6,83 +6,16 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $db = getDB();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-
-    if ($action === 'create') {
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $role = $_POST['role'] ?? 'user';
-
-        if ($name && $email && $password) {
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
-            try {
-                $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$name, $email, $hashed, $role]);
-                flash('success', 'User berhasil ditambahkan.');
-            } catch (PDOException $e) {
-                flash('error', 'Email sudah terdaftar.');
-            }
-        }
-    } elseif ($action === 'update') {
-        $id = (int)($_POST['id'] ?? 0);
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $role = $_POST['role'] ?? 'user';
-
-        // Cek target user
-        $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        $target = $stmt->fetch();
-
-        if (!$target) {
-            flash('error', 'User tidak ditemukan.');
-            redirect('users.php');
-        }
-
-        // Admin tidak bisa ubah password admin lain
-        if ($password && $target['role'] === 'admin' && $id != $user['id']) {
-            flash('error', 'Tidak bisa mengubah password admin lain.');
-            redirect('users.php');
-        }
-
-        if ($name && $email) {
-            try {
-                if ($password) {
-                    $hashed = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $db->prepare("UPDATE users SET name = ?, email = ?, role = ?, password = ? WHERE id = ?");
-                    $stmt->execute([$name, $email, $role, $hashed, $id]);
-                } else {
-                    $stmt = $db->prepare("UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?");
-                    $stmt->execute([$name, $email, $role, $id]);
-                }
-                flash('success', 'User berhasil diupdate.');
-            } catch (PDOException $e) {
-                flash('error', 'Email sudah terdaftar.');
-            }
-        }
-    } elseif ($action === 'delete') {
-        $id = (int)($_POST['id'] ?? 0);
-        if ($id == $user['id']) {
-            flash('error', 'Tidak bisa menghapus akun sendiri.');
-        } else {
-            $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
-            $stmt->execute([$id]);
-            $target = $stmt->fetch();
-            if ($target && $target['role'] === 'admin') {
-                flash('error', 'Tidak bisa menghapus admin lain.');
-            } else {
-                $db->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
-                flash('success', 'User berhasil dihapus.');
-            }
-        }
-    }
-    redirect('users.php');
+$search = $_GET['search'] ?? '';
+$where = '';
+$params = [];
+if ($search) {
+    [$ftWhere, $params] = ftSearch(['name', 'email'], $search);
+    $where = "WHERE $ftWhere";
 }
 
-$stmt = $db->query("SELECT * FROM users ORDER BY created_at DESC");
+$stmt = $db->prepare("SELECT * FROM users $where ORDER BY created_at DESC");
+$stmt->execute($params);
 $users = $stmt->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
@@ -91,7 +24,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="users()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Kelola User</span>
     </nav>
@@ -101,6 +34,24 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <button @click="openModal('create')" class="px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition text-sm font-medium inline-flex items-center gap-1.5">
             <i class="fa-solid fa-plus"></i> Tambah User
         </button>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
+        <form method="GET" action="index.php" class="flex gap-3 items-end">
+            <input type="hidden" name="url" value="users">
+            <div class="flex-1">
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari User</label>
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama atau email..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg text-sm hover:bg-primary-900 transition font-medium inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-search"></i> Cari
+            </button>
+            <?php if ($search): ?>
+            <a href="<?= pageUrl('users.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate"></i> Reset
+            </a>
+            <?php endif; ?>
+        </form>
     </div>
 
     <!-- Desktop Table -->
@@ -131,6 +82,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             </button>
                             <?php if ($u['id'] !== $user['id'] && $u['role'] !== 'admin'): ?>
                             <form method="POST" class="inline" onsubmit="return confirm('Hapus user <?= escape($u['name']) ?>?')">
+                                <?= csrf() ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
                                 <button type="submit" title="Hapus user" class="p-1.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition">
@@ -168,6 +120,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     </button>
                     <?php if ($u['id'] !== $user['id'] && $u['role'] !== 'admin'): ?>
                     <form method="POST" class="inline" onsubmit="return confirm('Hapus user <?= escape($u['name']) ?>?')">
+                        <?= csrf() ?>
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="id" value="<?= $u['id'] ?>">
                         <button type="submit" title="Hapus user" class="p-1.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition">
@@ -196,6 +149,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
         </div>
         <form method="POST" class="p-6 space-y-4">
+            <?= csrf() ?>
             <input type="hidden" name="action" :value="form.action">
             <input type="hidden" name="id" :value="form.id">
             <div>

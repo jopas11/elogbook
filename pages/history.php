@@ -11,9 +11,17 @@ $where = "WHERE l.deleted_at IS NULL";
 $params = [];
 
 if ($search) {
-    $where .= " AND (s.jenis_sparepart LIKE ? OR s.merk LIKE ? OR l.pic_penerima LIKE ? OR l.tipe_transaksi LIKE ?)";
-    $s = '%' . $search . '%';
-    $params = array_merge($params, [$s, $s, $s, $s]);
+    [$ftWhere, $ftParams] = ftSearch(
+        ['s.jenis_sparepart', 's.merk', 's.type_sparepart', 's.serial_number'],
+        $search
+    );
+    // Also search logbook columns — combine with OR
+    [$ftWhere2, $ftParams2] = ftSearch(
+        ['l.pic_penerima'],
+        $search
+    );
+    $where .= " AND (($ftWhere) OR ($ftWhere2) OR l.tipe_transaksi LIKE ?)";
+    $params = array_merge($params, $ftParams, $ftParams2, ['%' . $search . '%']);
 }
 if (!empty($_GET['date_from'])) {
     $where .= " AND l.tanggal >= ?";
@@ -24,18 +32,7 @@ if (!empty($_GET['date_to'])) {
     $params[] = $_GET['date_to'];
 }
 
-$page = max(1, (int)($_GET['page'] ?? 1));
-$perPage = 15;
-$offset = ($page - 1) * $perPage;
-
-$countStmt = $db->prepare("SELECT COUNT(*) FROM logbooks l JOIN spareparts s ON s.id = l.sparepart_id $where");
-$countStmt->execute($params);
-$totalItems = $countStmt->fetchColumn();
-$totalPages = ceil($totalItems / $perPage);
-
-$stmt = $db->prepare("SELECT l.*, s.jenis_sparepart, s.merk, u.name as admin_name FROM logbooks l JOIN spareparts s ON s.id = l.sparepart_id JOIN users u ON u.id = l.user_id $where ORDER BY l.created_at DESC LIMIT $perPage OFFSET $offset");
-$stmt->execute($params);
-$logbooks = $stmt->fetchAll();
+[$logbooks, $page, $totalPages] = paginate($db, "SELECT l.*, s.jenis_sparepart, s.merk, u.name as admin_name FROM logbooks l JOIN spareparts s ON s.id = l.sparepart_id JOIN users u ON u.id = l.user_id $where ORDER BY l.created_at DESC", $params);
 
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/sidebar.php';
@@ -43,7 +40,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="history()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">History</span>
     </nav>
@@ -53,7 +50,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
-        <form method="GET" class="flex flex-wrap gap-3 items-end">
+        <form method="GET" action="index.php" class="flex flex-wrap gap-3 items-end">
+            <input type="hidden" name="url" value="history">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
                 <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Jenis, PIC, transaksi..." class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
@@ -70,7 +68,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg text-sm hover:bg-primary-900 transition font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-filter"></i> Filter
                 </button>
-                <a href="history.php" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
+                <a href="<?= pageUrl('history.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-rotate"></i> Reset
                 </a>
             </div>
@@ -125,19 +123,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 </tbody>
             </table>
         </div>
-        <?php if ($totalPages > 1): ?>
-        <div class="flex justify-between items-center px-4 py-3 border-t border-gray-100 dark:border-gray-700">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Halaman <?= $page ?> dari <?= $totalPages ?></p>
-            <div class="flex gap-1">
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                <a href="?page=<?= $i ?>&<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"
-                   class="px-3 py-1 rounded-lg text-sm font-medium transition <?= $i === $page ? 'bg-primary-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' ?>">
-                    <?= $i ?>
-                </a>
-                <?php endfor; ?>
-            </div>
-        </div>
-        <?php endif; ?>
+        <?= renderPagination($page, $totalPages) ?>
     </div>
 
     <!-- Mobile Cards -->
@@ -186,19 +172,10 @@ require_once __DIR__ . '/../includes/sidebar.php';
             </div>
             <?php endforeach; ?>
         <?php endif; ?>
-        <?php if ($totalPages > 1): ?>
-        <div class="flex justify-center gap-1 pt-2">
-            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-            <a href="?page=<?= $i ?>&<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"
-               class="px-3 py-1.5 rounded-lg text-sm font-medium transition <?= $i === $page ? 'bg-primary-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' ?>">
-                <?= $i ?>
-            </a>
-            <?php endfor; ?>
-        </div>
-        <?php endif; ?>
+        <?= renderPagination($page, $totalPages) ?>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2"></script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

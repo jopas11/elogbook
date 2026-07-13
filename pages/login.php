@@ -12,28 +12,35 @@ $error = '';
 $email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
+        $error = 'Token CSRF tidak valid. Silakan coba lagi.';
+    }
+
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (empty($email) || empty($password)) {
-        $error = 'Email dan password wajib diisi.';
-    } else {
-        try {
-            $db = getDB();
-            $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
+    if (!$error) {
+        if (empty($email) || empty($password)) {
+            $error = 'Email dan password wajib diisi.';
+        } else {
+            try {
+                $db = getDB();
+                $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                $user = $stmt->fetch();
 
-            if ($user && password_verify($password, $user['password'])) {
-                unset($user['password']);
-                $_SESSION['user'] = $user;
-                flash('success', 'Selamat datang, ' . $user['name'] . '!');
-                redirect('dashboard.php');
-            } else {
-                $error = 'Email atau password salah.';
+                if ($user && password_verify($password, $user['password'])) {
+                    unset($user['password']);
+                    session_regenerate_id(true);
+                    $_SESSION['user'] = $user;
+                    flash('success', 'Selamat datang, ' . $user['name'] . '!');
+                    redirect('dashboard.php');
+                } else {
+                    $error = 'Email atau password salah.';
+                }
+            } catch (PDOException $e) {
+                $error = 'Terjadi kesalahan sistem.';
             }
-        } catch (PDOException $e) {
-            $error = 'Terjadi kesalahan sistem.';
         }
     }
 }
@@ -76,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" class="space-y-4">
+                <?= csrf() ?>
                 <div class="animate-fade-in delay-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                     <div class="relative">

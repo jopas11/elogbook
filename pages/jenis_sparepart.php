@@ -6,40 +6,6 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $db = getDB();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $id = (int)($_POST['id'] ?? 0);
-    $nama = trim($_POST['nama'] ?? '');
-    $type = trim($_POST['type'] ?? '');
-
-    if ($action === 'create_jenis' && $nama) {
-        $stmt = $db->prepare("INSERT INTO jenis_spareparts (nama) VALUES (?)");
-        $stmt->execute([$nama]);
-        flash('success', 'Jenis sparepart ditambahkan.');
-    } elseif ($action === 'update_jenis' && $id && $nama) {
-        $stmt = $db->prepare("UPDATE jenis_spareparts SET nama = ? WHERE id = ? AND type IS NULL");
-        $stmt->execute([$nama, $id]);
-        flash('success', 'Jenis sparepart diupdate.');
-    } elseif ($action === 'delete_jenis' && $id) {
-        $stmt = $db->prepare("DELETE FROM jenis_spareparts WHERE id = ? AND type IS NULL");
-        $stmt->execute([$id]);
-        flash('success', 'Jenis sparepart dihapus.');
-    } elseif ($action === 'create_type' && $type) {
-        $stmt = $db->prepare("INSERT INTO jenis_spareparts (nama, type) VALUES (?, ?)");
-        $stmt->execute([$type, $type]);
-        flash('success', 'Type sparepart ditambahkan.');
-    } elseif ($action === 'update_type' && $id && $type) {
-        $stmt = $db->prepare("UPDATE jenis_spareparts SET nama = ?, type = ? WHERE id = ? AND type IS NOT NULL");
-        $stmt->execute([$type, $type, $id]);
-        flash('success', 'Type sparepart diupdate.');
-    } elseif ($action === 'delete_type' && $id) {
-        $stmt = $db->prepare("DELETE FROM jenis_spareparts WHERE id = ? AND type IS NOT NULL");
-        $stmt->execute([$id]);
-        flash('success', 'Type sparepart dihapus.');
-    }
-    redirect('jenis_sparepart.php');
-}
-
 $jenisList = $db->query("SELECT * FROM jenis_spareparts WHERE type IS NULL ORDER BY nama")->fetchAll();
 $typeList = $db->query("SELECT * FROM jenis_spareparts WHERE type IS NOT NULL ORDER BY nama")->fetchAll();
 
@@ -49,7 +15,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="jenis()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="dashboard.php" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Jenis & Type</span>
     </nav>
@@ -75,6 +41,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <i class="fa-solid fa-pen"></i>
                         </button>
                         <form method="POST" class="inline" onsubmit="return confirm('Hapus jenis ini?')">
+                            <?= csrf() ?>
                             <input type="hidden" name="action" value="delete_jenis">
                             <input type="hidden" name="id" value="<?= $j['id'] ?>">
                             <button type="submit" title="Hapus" class="p-1.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition">
@@ -111,6 +78,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <i class="fa-solid fa-pen"></i>
                         </button>
                         <form method="POST" class="inline" onsubmit="return confirm('Hapus type ini?')">
+                            <?= csrf() ?>
                             <input type="hidden" name="action" value="delete_type">
                             <input type="hidden" name="id" value="<?= $t['id'] ?>">
                             <button type="submit" title="Hapus" class="p-1.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition">
@@ -142,6 +110,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
         </div>
         <form method="POST" class="p-6 space-y-4">
+            <?= csrf() ?>
             <input type="hidden" name="id" :value="form.id">
             <input type="hidden" name="action" :value="form.action">
             <div x-show="!form.action.includes('type')">
