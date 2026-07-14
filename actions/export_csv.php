@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 $db = getDB();
 
 $where = "WHERE deleted_at IS NULL";
-$params = [];
+$params = array();
 
 if (!empty($_GET['kategori'])) {
     $where .= " AND kategori = ?";

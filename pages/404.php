@@ -17,13 +17,13 @@
 </head>
 <body class="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 h-screen flex items-center justify-center p-4 transition-colors duration-200">
     <div class="text-center max-w-md animate-fade-up">
-        <div class="text-9xl font-bold text-primary-800/20 dark:text-primary-400/10 animate-float">404</div>
-        <div class="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto -mt-12 mb-6 shadow-lg">
-            <i class="fa-solid fa-map-pin text-primary-800 dark:text-primary-400 text-3xl"></i>
+        <div class="text-9xl font-bold text-indigo-600/20 dark:text-indigo-400/10 animate-float">404</div>
+        <div class="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto -mt-12 mb-6 shadow-lg">
+            <i class="fa-solid fa-map-pin text-indigo-600 dark:text-indigo-400 text-3xl"></i>
         </div>
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-2 animate-fade-up delay-1">Halaman Tidak Ditemukan</h1>
         <p class="text-gray-500 dark:text-gray-400 mb-8 animate-fade-up delay-1">Halaman yang Anda cari tidak tersedia atau telah dipindahkan.</p>
-        <a href="<?= pageUrl('dashboard.php') ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-800 text-white rounded-xl hover:bg-primary-900 transition font-medium shadow-lg shadow-primary-800/20 animate-fade-up delay-2">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold shadow-lg shadow-indigo-500/25 animate-fade-up delay-2">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
         </a>
     </div>

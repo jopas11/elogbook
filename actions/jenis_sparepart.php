@@ -10,15 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('jenis_sparepart.php');
 }
 
-if (!verifyCsrf($_POST['csrf_token'] ?? '')) {
+if (!verifyCsrf(_get($_POST, 'csrf_token', ''))) {
     flash('error', 'Token CSRF tidak valid.');
     redirect('jenis_sparepart.php');
 }
 
-$action = $_POST['action'] ?? '';
-$id = (int)($_POST['id'] ?? 0);
-$nama = trim($_POST['nama'] ?? '');
-$type = trim($_POST['type'] ?? '');
+$action = _get($_POST, 'action', '');
+$id = (int)_get($_POST, 'id', 0);
+$nama = trim(_get($_POST, 'nama', ''));
+$type = trim(_get($_POST, 'type', ''));
 
 if ($action === 'create_jenis' && $nama) {
     $stmt = $db->prepare("INSERT INTO jenis_spareparts (nama) VALUES (?)");

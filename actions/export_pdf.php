@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 $db = getDB();
 
 $where = "WHERE deleted_at IS NULL";
-$params = [];
+$params = array();
 
 if (!empty($_GET['kategori'])) {
     $where .= " AND kategori = ?";
@@ -83,12 +83,12 @@ $stats = $db->query("
             <tr>
                 <td>#<?= $sp['id'] ?></td>
                 <td><?= htmlspecialchars($sp['jenis_sparepart']) ?></td>
-                <td><?= htmlspecialchars($sp['type_sparepart'] ?? '-') ?></td>
-                <td><?= htmlspecialchars($sp['merk'] ?? '-') ?></td>
-                <td><?= htmlspecialchars($sp['serial_number'] ?? '-') ?></td>
+                <td><?= htmlspecialchars(isset($sp['type_sparepart']) ? $sp['type_sparepart'] : '-') ?></td>
+                <td><?= htmlspecialchars(isset($sp['merk']) ? $sp['merk'] : '-') ?></td>
+                <td><?= htmlspecialchars(isset($sp['serial_number']) ? $sp['serial_number'] : '-') ?></td>
                 <td><?= $sp['kategori'] ?></td>
                 <td><?= $sp['status'] ?></td>
-                <td><?= htmlspecialchars($sp['pic'] ?? '-') ?></td>
+                <td><?= htmlspecialchars(isset($sp['pic']) ? $sp['pic'] : '-') ?></td>
                 <td><?= date('d/m/Y', strtotime($sp['tanggal'])) ?></td>
             </tr>
             <?php endforeach; ?>

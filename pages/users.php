@@ -6,11 +6,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $db = getDB();
 
-$search = $_GET['search'] ?? '';
+$search = _get($_GET, 'search', '');
 $where = '';
-$params = [];
+$params = array();
 if ($search) {
-    [$ftWhere, $params] = ftSearch(['name', 'email'], $search);
+    list($ftWhere, $params) = ftSearch(array('name', 'email'), $search);
     $where = "WHERE $ftWhere";
 }
 
@@ -24,14 +24,14 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="users()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Kelola User</span>
     </nav>
 
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Kelola User</h2>
-        <button @click="openModal('create')" class="px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition text-sm font-medium inline-flex items-center gap-1.5">
+        <button @click="openModal('create')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
             <i class="fa-solid fa-plus"></i> Tambah User
         </button>
     </div>
@@ -41,9 +41,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <input type="hidden" name="url" value="users">
             <div class="flex-1">
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari User</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama atau email..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama atau email..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
-            <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg text-sm hover:bg-primary-900 transition font-medium inline-flex items-center gap-1.5">
+            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1.5">
                 <i class="fa-solid fa-search"></i> Cari
             </button>
             <?php if ($search): ?>
@@ -103,7 +103,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <?php foreach ($users as $u): ?>
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 transition hover:shadow-md">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-800 dark:text-primary-400 font-bold shrink-0">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold shrink-0">
                     <?= strtoupper(substr($u['name'], 0, 1)) ?>
                 </div>
                 <div class="min-w-0 flex-1">
@@ -154,11 +154,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <input type="hidden" name="id" :value="form.id">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama <span class="text-red-500">*</span></label>
-                <input type="text" name="name" x-model="form.name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <input type="text" name="name" x-model="form.name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email <span class="text-red-500">*</span></label>
-                <input type="email" name="email" x-model="form.email" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <input type="email" name="email" x-model="form.email" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -166,18 +166,18 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <span x-show="form.action === 'create'" class="text-red-500">*</span>
                     <span x-show="form.action === 'update'" class="text-gray-400 text-xs">(kosongkan jika tidak diubah)</span>
                 </label>
-                <input type="password" name="password" :required="form.action === 'create'" minlength="6" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <input type="password" name="password" :required="form.action === 'create'" minlength="6" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-                <select name="role" x-model="form.role" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <select name="role" x-model="form.role" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                 </select>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition text-sm font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>

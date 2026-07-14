@@ -3,7 +3,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/functions.php';
 
-$url = $_GET['url'] ?? '';
+$url = _get($_GET, 'url', '');
 $url = rtrim($url, '/');
 $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = preg_replace('/\.php$/i', '', $url); // Strip .php extension if present

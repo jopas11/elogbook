@@ -12,7 +12,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="{ showDeleteModal: false }" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Profile</span>
     </nav>
@@ -21,51 +21,34 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Profile Saya</h2>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Informasi Profile</h3>
-            <form method="POST" class="space-y-4">
-                <?= csrf() ?>
-                <input type="hidden" name="action" value="update_profile">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
-                    <input type="text" name="name" value="<?= escape($user['name']) ?>" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                    <input type="email" name="email" value="<?= escape($user['email']) ?>" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
-                </div>
-                <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg text-sm hover:bg-primary-900 transition font-medium inline-flex items-center gap-1.5">
-                    <i class="fa-solid fa-save"></i> Simpan Profile
-                </button>
-            </form>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Ubah Password</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 card-hover">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-key text-indigo-500"></i>
+            Ubah Password
+        </h3>
             <form method="POST" class="space-y-4">
                 <?= csrf() ?>
                 <input type="hidden" name="action" value="update_password">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Saat Ini</label>
-                    <input type="password" name="current_password" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                    <input type="password" name="current_password" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Baru</label>
-                    <input type="password" name="new_password" required minlength="6" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                    <input type="password" name="new_password" required minlength="6" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Konfirmasi Password Baru</label>
-                    <input type="password" name="new_password_confirmation" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                    <input type="password" name="new_password_confirmation" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
-                <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg text-sm hover:bg-primary-900 transition font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-key"></i> Ubah Password
                 </button>
             </form>
         </div>
     </div>
 
-    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-red-200 dark:border-red-900">
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-red-200 dark:border-red-900 card-hover">
         <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Hapus Akun</h3>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Setelah akun dihapus, semua data akan hilang permanen.</p>
         <button @click="showDeleteModal = true" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition font-medium inline-flex items-center gap-1.5">

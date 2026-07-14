@@ -15,7 +15,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div x-data="jenis()" class="page-enter">
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-primary-800 dark:hover:text-primary-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Jenis & Type</span>
     </nav>
@@ -28,7 +28,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Daftar Jenis Sparepart</h3>
-                <button @click="openModal('jenis', 'tambah')" class="px-3 py-1.5 bg-primary-800 text-white rounded-lg text-xs hover:bg-primary-900 transition font-medium inline-flex items-center gap-1">
+                <button @click="openModal('jenis', 'tambah')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1">
                     <i class="fa-solid fa-plus"></i> Tambah
                 </button>
             </div>
@@ -60,7 +60,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Daftar Type Sparepart</h3>
-                <button @click="openModal('type', 'tambah')" class="px-3 py-1.5 bg-primary-800 text-white rounded-lg text-xs hover:bg-primary-900 transition font-medium inline-flex items-center gap-1">
+                <button @click="openModal('type', 'tambah')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1">
                     <i class="fa-solid fa-plus"></i> Tambah
                 </button>
             </div>
@@ -74,7 +74,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         <?php endif; ?>
                     </div>
                     <div class="flex gap-1 shrink-0">
-                        <button @click="openModal('type', 'edit', <?= $t['id'] ?>, '<?= escape($t['nama']) ?>', '<?= escape($t['type'] ?? '') ?>')" title="Edit" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
+                        <button @click="openModal('type', 'edit', <?= $t['id'] ?>, '<?= escape($t['nama']) ?>', '<?= escape(isset($t['type']) ? $t['type'] : '') ?>')" title="Edit" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
                             <i class="fa-solid fa-pen"></i>
                         </button>
                         <form method="POST" class="inline" onsubmit="return confirm('Hapus type ini?')">
@@ -115,15 +115,15 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <input type="hidden" name="action" :value="form.action">
             <div x-show="!form.action.includes('type')">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama <span class="text-red-500">*</span></label>
-                <input type="text" name="nama" x-model="form.nama" :required="!form.action.includes('type')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <input type="text" name="nama" x-model="form.nama" :required="!form.action.includes('type')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
             <div x-show="form.action.includes('type')">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type <span class="text-red-500">*</span></label>
-                <input type="text" name="type" x-model="form.type" :required="form.action.includes('type')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none transition">
+                <input type="text" name="type" x-model="form.type" :required="form.action.includes('type')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition text-sm font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>
