@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS jenis_spareparts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    kategori ENUM('Aset','Non-Aset') DEFAULT NULL,
     nama VARCHAR(255) NOT NULL,
     type VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS jenis_spareparts (
 
 CREATE TABLE IF NOT EXISTS spareparts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT DEFAULT NULL,
     kategori ENUM('Aset','Non-Aset') NOT NULL,
     jenis_sparepart VARCHAR(255) NOT NULL,
     type_sparepart VARCHAR(255) DEFAULT NULL,
@@ -43,7 +45,9 @@ CREATE TABLE IF NOT EXISTS logbooks (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sparepart_id INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    tipe_transaksi ENUM('Barang Masuk','Barang Keluar','Ubah Status','Dalam Perbaikan','Permintaan') NOT NULL,
+    tipe_transaksi ENUM('Barang Masuk','Barang Keluar','Ubah Status','Dalam Perbaikan','Permintaan','Dihapus') NOT NULL,
+    status_lama VARCHAR(50) DEFAULT NULL,
+    status_baru VARCHAR(50) DEFAULT NULL,
     pic_penerima VARCHAR(255) DEFAULT NULL,
     department VARCHAR(255) DEFAULT NULL,
     tanggal DATE NOT NULL,
@@ -51,12 +55,27 @@ CREATE TABLE IF NOT EXISTS logbooks (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
-    FULLTEXT INDEX ft_logbooks (pic_penerima) WITH PARSER ngram,
+    FULLTEXT INDEX ft_logbooks_pic (pic_penerima) WITH PARSER ngram,
     FOREIGN KEY (sparepart_id) REFERENCES spareparts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Migration for existing databases (run if upgrading):
--- ALTER TABLE spareparts ADD FULLTEXT INDEX ft_spareparts (jenis_sparepart, merk, type_sparepart, serial_number) WITH PARSER ngram;
--- ALTER TABLE users ADD FULLTEXT INDEX ft_users (name, email) WITH PARSER ngram;
--- ALTER TABLE logbooks ADD FULLTEXT INDEX ft_logbooks (pic_penerima) WITH PARSER ngram;
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED DEFAULT NULL,
+    action VARCHAR(100) NOT NULL,
+    description TEXT,
+    ip_address VARCHAR(45) DEFAULT NULL,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX login_attempts_email_ip_idx (email, ip_address),
+    INDEX login_attempts_time_idx (attempted_at)
+);

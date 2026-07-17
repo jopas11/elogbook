@@ -23,14 +23,13 @@ if ($action === 'show') {
             $logWhere .= " AND l.user_id = ?";
             $logParams[] = $user['id'];
         }
-        $stmtLogs = $db->prepare("
-            SELECT l.*, u.name AS user_name
-            FROM logbooks l
-            LEFT JOIN users u ON l.user_id = u.id
-            WHERE $logWhere
-            ORDER BY l.created_at DESC
-            LIMIT 20
-        ");
+            $stmtLogs = $db->prepare("
+                SELECT l.*, u.name AS user_name, DATE_FORMAT(l.created_at, '%d/%m/%Y %H:%i') AS waktu
+                FROM logbooks l
+                LEFT JOIN users u ON l.user_id = u.id
+                WHERE $logWhere
+                ORDER BY l.created_at DESC
+            ");
         $stmtLogs->execute($logParams);
         $logs = $stmtLogs->fetchAll();
     }
@@ -38,6 +37,150 @@ if ($action === 'show') {
         echo json_encode(array('success' => true, 'data' => $data, 'logs' => $logs));
     } else {
         echo json_encode(array('success' => false, 'message' => 'Data tidak ditemukan.'));
+    }
+    exit;
+}
+
+if ($action === 'search_sn') {
+    header('Content-Type: application/json');
+    $q = trim(_get($_GET, 'q', ''));
+    if ($q === '') {
+        echo json_encode(array('success' => true, 'data' => array()));
+        exit;
+    }
+    $search = 'SN-' . $q . '%';
+    $stmt = $db->prepare("SELECT id, serial_number, jenis_sparepart, type_sparepart, merk, status FROM spareparts WHERE serial_number LIKE ? AND deleted_at IS NULL ORDER BY serial_number LIMIT 10");
+    $stmt->execute(array($search));
+    $results = $stmt->fetchAll();
+    echo json_encode(array('success' => true, 'data' => $results));
+    exit;
+}
+
+if ($action === 'list_by_group') {
+    header('Content-Type: application/json');
+    $kategori = _get($_GET, 'kategori', '');
+    $jenis = _get($_GET, 'jenis', '');
+    $type = _get($_GET, 'type', '');
+
+    if (empty($kategori) || empty($jenis)) {
+        echo json_encode(array('success' => false, 'message' => 'Parameter tidak lengkap.'));
+        exit;
+    }
+
+    $search = _get($_GET, 'q', '');
+
+    if ($type === '' || $type === '-') {
+        $where = "kategori = ? AND jenis_sparepart = ? AND (type_sparepart IS NULL OR type_sparepart = '') AND deleted_at IS NULL";
+        $params = array($kategori, $jenis);
+    } else {
+        $where = "kategori = ? AND jenis_sparepart = ? AND type_sparepart = ? AND deleted_at IS NULL";
+        $params = array($kategori, $jenis, $type);
+    }
+
+    if ($search) {
+        $where .= " AND (serial_number LIKE ? OR merk LIKE ?)";
+        $s = '%' . $search . '%';
+        $params[] = $s;
+        $params[] = $s;
+    }
+
+    $page = max(1, (int)_get($_GET, 'page', 1));
+    $perPage = 20;
+    $offset = ($page - 1) * $perPage;
+
+    $countStmt = $db->prepare("SELECT COUNT(*) FROM spareparts WHERE $where");
+    $countStmt->execute($params);
+    $totalItems = (int)$countStmt->fetchColumn();
+    $totalPages = max(1, (int)ceil($totalItems / $perPage));
+
+    $stmt = $db->prepare("SELECT * FROM spareparts WHERE $where ORDER BY created_at DESC LIMIT $perPage OFFSET $offset");
+    $stmt->execute($params);
+    $items = $stmt->fetchAll();
+
+    // Summary stats
+    $sumStmt = $db->prepare("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'Tersedia' THEN 1 ELSE 0 END) as tersedia,
+        SUM(CASE WHEN status = 'Terpakai' THEN 1 ELSE 0 END) as terpakai,
+        SUM(CASE WHEN status = 'Rusak' THEN 1 ELSE 0 END) as rusak,
+        SUM(CASE WHEN status = 'Dalam Perbaikan' THEN 1 ELSE 0 END) as dalam_perbaikan
+    FROM spareparts WHERE $where");
+    $sumStmt->execute($params);
+    $stats = $sumStmt->fetch();
+
+    echo json_encode(array(
+        'success' => true,
+        'items' => $items,
+        'kategori' => $kategori,
+        'jenis' => $jenis,
+        'type' => $type,
+        'stats' => $stats,
+        'page' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $totalItems,
+        'search' => $search
+    ));
+    exit;
+}
+
+if ($action === 'show_by_sn') {
+    header('Content-Type: application/json');
+    $sn = trim(_get($_GET, 'sn', ''));
+    if ($sn === '') {
+        echo json_encode(array('success' => false, 'message' => 'Serial number diperlukan.'));
+        exit;
+    }
+    if (strpos($sn, 'SN-') !== 0) {
+        $sn = 'SN-' . $sn;
+    }
+    $stmt = $db->prepare("SELECT * FROM spareparts WHERE serial_number = ? AND deleted_at IS NULL LIMIT 1");
+    $stmt->execute(array($sn));
+    $data = $stmt->fetch();
+    if ($data) {
+        echo json_encode(array('success' => true, 'data' => $data));
+    } else {
+        echo json_encode(array('success' => false, 'message' => 'Serial number tidak ditemukan.'));
+    }
+    exit;
+}
+
+if ($action === 'realtime_dashboard') {
+    header('Content-Type: application/json');
+    try {
+        $stats = $db->query("
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'Tersedia' THEN 1 ELSE 0 END) as tersedia,
+                SUM(CASE WHEN status = 'Terpakai' THEN 1 ELSE 0 END) as terpakai,
+                SUM(CASE WHEN status = 'Rusak' THEN 1 ELSE 0 END) as rusak,
+                SUM(CASE WHEN status = 'Dalam Perbaikan' THEN 1 ELSE 0 END) as dalam_perbaikan
+            FROM spareparts WHERE deleted_at IS NULL
+        ")->fetch();
+
+        if (isAdmin()) {
+            $dipakai = $db->query("
+                SELECT id, jenis_sparepart, type_sparepart, merk, serial_number, kategori, status, pic, department, tanggal, keterangan, updated_at
+                FROM spareparts WHERE deleted_at IS NULL AND status = 'Terpakai'
+                ORDER BY updated_at DESC LIMIT 20
+            ")->fetchAll();
+        } else {
+            $stmt = $db->prepare("
+                SELECT id, jenis_sparepart, type_sparepart, merk, serial_number, kategori, status, pic, department, tanggal, keterangan, updated_at
+                FROM spareparts WHERE deleted_at IS NULL AND status = 'Terpakai' AND pic = ?
+                ORDER BY updated_at DESC LIMIT 20
+            ");
+            $stmt->execute(array($user['name']));
+            $dipakai = $stmt->fetchAll();
+        }
+
+        echo json_encode(array(
+            'success' => true,
+            'stats' => $stats,
+            'dipakai' => $dipakai,
+            'server_time' => date('Y-m-d H:i:s')
+        ));
+    } catch (PDOException $e) {
+        echo json_encode(array('success' => false, 'message' => $e->getMessage()));
     }
     exit;
 }
@@ -55,7 +198,7 @@ if ($action === 'store') {
     $kategori = _get($_POST, 'kategori', 'Aset');
     $jenis_sparepart = trim(_get($_POST, 'jenis_sparepart', ''));
     $type_sparepart = trim(_get($_POST, 'type_sparepart', ''));
-    $quantity = (int)_get($_POST, 'quantity', 1);
+    $quantity = $kategori === 'Aset' ? 0 : (int)_get($_POST, 'quantity', 1);
     $tanggal = _get($_POST, 'tanggal', date('Y-m-d'));
     $merk = trim(_get($_POST, 'merk', ''));
     $pic = trim(_get($_POST, 'pic', ''));
@@ -68,7 +211,9 @@ if ($action === 'store') {
     $raw = array_filter($raw, function($v) { return $v !== ''; });
     $serialNumbers = array_map(function($v) { return 'SN-' . $v; }, $raw);
 
-    if (count($serialNumbers) !== $quantity) {
+    if ($kategori === 'Aset') {
+        $quantity = count($serialNumbers);
+    } elseif (count($serialNumbers) !== $quantity) {
         flash('error', 'Jumlah serial number (' . count($serialNumbers) . ') tidak sama dengan quantity (' . $quantity . ').');
         redirect('dashboard.php');
     }
@@ -93,7 +238,9 @@ if ($action === 'store') {
 
         flash('success', $inserted . ' sparepart berhasil ditambahkan.');
     } catch (PDOException $e) {
-        $db->rollBack();
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
         if ($e->getCode() == 23000 && strpos($e->getMessage(), 'serial_number') !== false) {
             flash('error', 'Serial number "' . $sn . '" sudah terdaftar.');
         } else {

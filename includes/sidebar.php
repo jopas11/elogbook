@@ -25,15 +25,20 @@
                 sidebarVisible: localStorage.getItem('sidebarVisible') !== 'false',
                 isDark: localStorage.getItem('darkMode') === 'true',
                 showLogoutModal: false,
+                windowWidth: window.innerWidth,
                 init() {
                     if (this.isDark) document.documentElement.classList.add('dark');
                     this.$nextTick(() => {
                         var el = document.getElementById('pre-collapse');
                         if (el) el.remove();
                     });
+                    window.addEventListener('resize', () => {
+                        this.windowWidth = window.innerWidth;
+                        if (this.windowWidth >= 1024) this.mobileOpen = false;
+                    });
                 },
                 isDesktop() {
-                    return window.innerWidth >= 1024;
+                    return this.windowWidth >= 1024;
                 },
                 toggleSidebar() {
                     if (this.isDesktop()) {
@@ -174,6 +179,7 @@
         ['url' => 'jenis_sparepart.php', 'label' => 'Jenis & Type', 'icon' => 'fa-tags'],
         ['url' => 'ubah_status.php', 'label' => 'Ubah Status', 'icon' => 'fa-arrows-rotate'],
         ['url' => 'users.php', 'label' => 'Kelola User', 'icon' => 'fa-users-gear'],
+        ['url' => 'audit_logs.php', 'label' => 'Audit Log', 'icon' => 'fa-clipboard-list'],
     ];
     ?>
     <div class="px-3 pt-3 pb-1">

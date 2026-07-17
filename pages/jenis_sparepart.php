@@ -7,7 +7,8 @@ require_once __DIR__ . '/../includes/auth_check.php';
 $db = getDB();
 
 $jenisList = $db->query("SELECT * FROM jenis_spareparts WHERE type IS NULL ORDER BY nama")->fetchAll();
-$typeList = $db->query("SELECT * FROM jenis_spareparts WHERE type IS NOT NULL ORDER BY nama")->fetchAll();
+$typeList = $db->query("SELECT * FROM jenis_spareparts WHERE type IS NOT NULL ORDER BY nama, type")->fetchAll();
+$jenisOptions = $db->query("SELECT id, nama, kategori FROM jenis_spareparts WHERE type IS NULL ORDER BY nama")->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/sidebar.php';
@@ -32,12 +33,21 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <i class="fa-solid fa-plus"></i> Tambah
                 </button>
             </div>
+            <div class="mb-3">
+                <input type="text" x-model="jenisSearch" placeholder="Cari jenis..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
             <div class="space-y-2">
                 <?php foreach ($jenisList as $j): ?>
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <span class="text-sm text-gray-700 dark:text-gray-300"><?= escape($j['nama']) ?></span>
-                    <div class="flex gap-1">
-                        <button @click="openModal('jenis', 'edit', <?= $j['id'] ?>, '<?= escape($j['nama']) ?>')" title="Edit" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
+                <div x-show="!jenisSearch || '<?= escape(strtolower($j['nama'] . ' ' . $j['kategori'])) ?>'.includes(jenisSearch.toLowerCase())"
+                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div class="min-w-0 flex-1 flex items-center gap-2">
+                        <span class="text-sm text-gray-700 dark:text-gray-300"><?= escape($j['nama']) ?></span>
+                        <?php if ($j['kategori']): ?>
+                        <span class="text-xs px-1.5 py-0.5 rounded-full <?= $j['kategori'] === 'Aset' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' ?>"><?= escape($j['kategori']) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button @click="openModal('jenis', 'edit', <?= $j['id'] ?>, '<?= escape($j['nama']) ?>', '', '<?= escape($j['kategori'] ?? '') ?>')" title="Edit" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
                             <i class="fa-solid fa-pen"></i>
                         </button>
                         <form method="POST" class="inline" onsubmit="return confirm('Hapus jenis ini?')">
@@ -64,17 +74,19 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <i class="fa-solid fa-plus"></i> Tambah
                 </button>
             </div>
+            <div class="mb-3">
+                <input type="text" x-model="typeSearch" placeholder="Cari type..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
             <div class="space-y-2">
                 <?php foreach ($typeList as $t): ?>
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div x-show="!typeSearch || '<?= escape(strtolower($t['nama'] . ' ' . $t['type'])) ?>'.includes(typeSearch.toLowerCase())"
+                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <div class="min-w-0 flex-1">
-                        <span class="text-sm text-gray-700 dark:text-gray-300"><?= escape($t['nama']) ?></span>
-                        <?php if ($t['type']): ?>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">(<?= escape($t['type']) ?>)</span>
-                        <?php endif; ?>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 font-medium"><?= escape($t['nama']) ?></span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300 ml-1"><?= escape($t['type']) ?></span>
                     </div>
                     <div class="flex gap-1 shrink-0">
-                        <button @click="openModal('type', 'edit', <?= $t['id'] ?>, '<?= escape($t['nama']) ?>', '<?= escape(isset($t['type']) ? $t['type'] : '') ?>')" title="Edit" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
+                        <button @click="openModal('type', 'edit', <?= $t['id'] ?>, '<?= escape($t['nama']) ?>', '<?= escape($t['type']) ?>')" title="Edit" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
                             <i class="fa-solid fa-pen"></i>
                         </button>
                         <form method="POST" class="inline" onsubmit="return confirm('Hapus type ini?')">
@@ -97,30 +109,72 @@ require_once __DIR__ . '/../includes/sidebar.php';
 </div>
 
 <!-- Modal -->
-<div x-data="{ open: false, form: { action: '', title: '', id: 0, nama: '', type: '' } }"
+<div x-data="formModal()"
      x-show="open" x-cloak
      class="fixed inset-0 z-50 flex items-center justify-center p-4"
-     @open-form-modal.window="open = true; form = $event.detail"
      x-transition:enter="modal-enter-active" x-transition:enter-start="modal-enter"
      x-transition:leave="modal-leave-active" x-transition:leave-end="modal-leave">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="open = false" x-transition:enter="backdrop-enter-active" x-transition:enter-start="backdrop-enter" x-transition:leave="backdrop-leave-active" x-transition:leave-end="backdrop-leave"></div>
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md relative z-10">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="form.title"></h3>
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="title"></h3>
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
         </div>
         <form method="POST" class="p-6 space-y-4">
             <?= csrf() ?>
-            <input type="hidden" name="id" :value="form.id">
-            <input type="hidden" name="action" :value="form.action">
-            <div x-show="!form.action.includes('type')">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama <span class="text-red-500">*</span></label>
-                <input type="text" name="nama" x-model="form.nama" :required="!form.action.includes('type')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
-            </div>
-            <div x-show="form.action.includes('type')">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type <span class="text-red-500">*</span></label>
-                <input type="text" name="type" x-model="form.type" :required="form.action.includes('type')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
-            </div>
+            <input type="hidden" name="id" :value="id">
+            <input type="hidden" name="action" :value="action">
+
+            <!-- Form: Jenis (create/update) -->
+            <template x-if="isJenis">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori <span class="text-red-500">*</span></label>
+                        <select name="kategori" x-model="kategori" required
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            <option value="">Pilih Kategori</option>
+                            <option value="Aset">Aset</option>
+                            <option value="Non-Aset">Non-Aset</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama" x-model="nama" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    </div>
+                </div>
+            </template>
+
+            <!-- Form: Type (create/update) -->
+            <template x-if="isType">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                        <select x-model="kategoriType" @change="nama = ''"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            <option value="">Semua Kategori</option>
+                            <option value="Aset">Aset</option>
+                            <option value="Non-Aset">Non-Aset</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis <span class="text-red-500">*</span></label>
+                        <select name="nama" x-model="nama" required
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            <option value="">Pilih Jenis</option>
+                            <template x-for="j in filteredJenis" :key="j.id">
+                                <option :value="j.nama" x-text="j.nama + ' (' + j.kategori + ')'"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type <span class="text-red-500">*</span></label>
+                        <input type="text" name="type" x-model="type" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    </div>
+                </div>
+            </template>
+
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
@@ -134,12 +188,51 @@ require_once __DIR__ . '/../includes/sidebar.php';
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('jenis', () => ({
-            openModal(tipe, mode, id = 0, nama = '', type = '') {
+            jenisSearch: '',
+            typeSearch: '',
+            openModal(tipe, mode, id = 0, nama = '', type = '', kategori = '') {
                 let action = mode === 'tambah' ? `create_${tipe}` : `update_${tipe}`;
                 let title = mode === 'tambah' ? `Tambah ${tipe.charAt(0).toUpperCase() + tipe.slice(1)}` : `Edit ${tipe.charAt(0).toUpperCase() + tipe.slice(1)}`;
                 window.dispatchEvent(new CustomEvent('open-form-modal', {
-                    detail: { action, title, id, nama, type }
+                    detail: { action, title, id, nama, type, kategori }
                 }));
+            }
+        }));
+
+        Alpine.data('formModal', () => ({
+            open: false,
+            action: '',
+            title: '',
+            id: 0,
+            nama: '',
+            type: '',
+            kategori: '',
+            kategoriType: '',
+            jenisList: <?= json_encode($jenisOptions) ?>,
+
+            get isJenis() {
+                return !this.action.includes('type');
+            },
+            get isType() {
+                return this.action.includes('type');
+            },
+            get filteredJenis() {
+                if (!this.kategoriType) return this.jenisList;
+                return this.jenisList.filter(j => j.kategori === this.kategoriType);
+            },
+
+            init() {
+                document.addEventListener('open-form-modal', (e) => {
+                    const d = e.detail;
+                    this.open = true;
+                    this.action = d.action;
+                    this.title = d.title;
+                    this.id = d.id || 0;
+                    this.nama = d.nama || '';
+                    this.type = d.type || '';
+                    this.kategori = d.kategori || '';
+                    this.kategoriType = '';
+                });
             }
         }));
     });

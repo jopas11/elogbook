@@ -20,6 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = _get($_POST, 'password', '');
     $password_confirmation = _get($_POST, 'password_confirmation', '');
 
+    if ($error) {
+        $_SESSION['old'] = array('name' => $name, 'email' => $email);
+    }
+
     if (!$error) {
         if (empty($name) || empty($email) || empty($password)) {
             $error = 'Semua field wajib diisi.';

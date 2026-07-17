@@ -65,10 +65,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </form>
     </div>
 
-    <!-- Desktop Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hidden md:block">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm responsive-table">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold">ID</th>
@@ -82,12 +81,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     <?php foreach ($spareparts as $i => $sp): ?>
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition <?= $i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-800/50' ?>">
-                        <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">#<?= $sp['id'] ?></td>
-                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300"><?= escape($sp['jenis_sparepart']) ?></td>
-                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400"><?= escape(isset($sp['merk']) ? $sp['merk'] : '-') ?></td>
-                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape(isset($sp['serial_number']) ? $sp['serial_number'] : '-') ?></td>
-                        <td class="px-4 py-3"><?= getStatusBadge($sp['status']) ?></td>
-                        <td class="px-4 py-3 text-center">
+                        <td data-label="ID" class="font-medium text-gray-800 dark:text-gray-200">#<?= $sp['id'] ?></td>
+                        <td data-label="Jenis" class="text-gray-700 dark:text-gray-300"><?= escape($sp['jenis_sparepart']) ?></td>
+                        <td data-label="Merk" class="text-gray-600 dark:text-gray-400"><?= escape(isset($sp['merk']) ? $sp['merk'] : '-') ?></td>
+                        <td data-label="SN" class="text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape(isset($sp['serial_number']) ? $sp['serial_number'] : '-') ?></td>
+                        <td data-label="Status"><?= getStatusBadge($sp['status']) ?></td>
+                        <td data-label="Aksi" class="text-center">
                             <button @click="openUbah(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['status']) ?>')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition font-medium inline-flex items-center gap-1">
                                 <i class="fa-solid fa-arrows-rotate"></i> Ubah Status
                             </button>
@@ -104,35 +103,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         </td>
                     </tr>
                     <?php endif; ?>
-            </tbody>
-                </table>
-            </div>
-            <?= renderPagination($page, $totalPages) ?>
+                </tbody>
+            </table>
         </div>
-
-        <!-- Mobile Cards -->
-    <div class="md:hidden space-y-3">
-        <?php if (empty($spareparts)): ?>
-        <div class="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-500">
-            <i class="fa-solid fa-arrows-rotate text-4xl"></i>
-            <p class="text-sm">Tidak ada data.</p>
-        </div>
-        <?php else: ?>
-            <?php foreach ($spareparts as $sp): ?>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 transition hover:shadow-md">
-                <div class="flex justify-between items-start mb-2">
-                    <div class="min-w-0 flex-1">
-                        <p class="font-semibold text-gray-800 dark:text-gray-200 text-sm">#<?= $sp['id'] ?> — <?= escape($sp['jenis_sparepart']) ?></p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400"><?= escape(isset($sp['merk']) ? $sp['merk'] : '-') ?> <?= isset($sp['serial_number']) ? '| ' . escape($sp['serial_number']) : '' ?></p>
-                    </div>
-                    <?= getStatusBadge($sp['status']) ?>
-                </div>
-                <button @click="openUbah(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['status']) ?>')" class="w-full mt-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition font-medium inline-flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-arrows-rotate"></i> Ubah Status
-                </button>
-            </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
         <?= renderPagination($page, $totalPages) ?>
     </div>
 </div>

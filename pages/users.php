@@ -54,10 +54,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </form>
     </div>
 
-    <!-- Desktop Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hidden md:block">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm responsive-table">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold">ID</th>
@@ -71,15 +70,17 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     <?php foreach ($users as $i => $u): ?>
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition <?= $i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-800/50' ?>">
-                        <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">#<?= $u['id'] ?></td>
-                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300"><?= escape($u['name']) ?></td>
-                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400"><?= escape($u['email']) ?></td>
-                        <td class="px-4 py-3"><?= getRoleBadge($u['role']) ?></td>
-                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400"><?= formatTanggal(explode(' ', $u['created_at'])[0]) ?></td>
-                        <td class="px-4 py-3 text-center">
+                        <td data-label="ID" class="font-medium text-gray-800 dark:text-gray-200">#<?= $u['id'] ?></td>
+                        <td data-label="Nama" class="text-gray-700 dark:text-gray-300"><?= escape($u['name']) ?></td>
+                        <td data-label="Email" class="text-gray-600 dark:text-gray-400"><?= escape($u['email']) ?></td>
+                        <td data-label="Role"><?= getRoleBadge($u['role']) ?></td>
+                        <td data-label="Bergabung" class="text-gray-600 dark:text-gray-400"><?= formatTanggal(explode(' ', $u['created_at'])[0]) ?></td>
+                        <td data-label="Aksi" class="text-center">
+                            <?php if ($u['id'] === $user['id'] || $u['role'] !== 'admin'): ?>
                             <button @click="openModal('edit', <?= $u['id'] ?>, '<?= escape($u['name']) ?>', '<?= escape($u['email']) ?>', '<?= $u['role'] ?>')" title="Edit user" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
+                            <?php endif; ?>
                             <?php if ($u['id'] !== $user['id'] && $u['role'] !== 'admin'): ?>
                             <form method="POST" class="inline" onsubmit="return confirm('Hapus user <?= escape($u['name']) ?>?')">
                                 <?= csrf() ?>
@@ -96,42 +97,6 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <!-- Mobile Cards -->
-    <div class="md:hidden space-y-3">
-        <?php foreach ($users as $u): ?>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 transition hover:shadow-md">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold shrink-0">
-                    <?= strtoupper(substr($u['name'], 0, 1)) ?>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-gray-800 dark:text-gray-200 text-sm"><?= escape($u['name']) ?></p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400"><?= escape($u['email']) ?></p>
-                </div>
-                <?= getRoleBadge($u['role']) ?>
-            </div>
-            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                <span class="text-xs text-gray-500 dark:text-gray-400">Bergabung: <?= formatTanggal(explode(' ', $u['created_at'])[0]) ?></span>
-                <div class="flex gap-1">
-                    <button @click="openModal('edit', <?= $u['id'] ?>, '<?= escape($u['name']) ?>', '<?= escape($u['email']) ?>', '<?= $u['role'] ?>')" title="Edit user" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <?php if ($u['id'] !== $user['id'] && $u['role'] !== 'admin'): ?>
-                    <form method="POST" class="inline" onsubmit="return confirm('Hapus user <?= escape($u['name']) ?>?')">
-                        <?= csrf() ?>
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                        <button type="submit" title="Hapus user" class="p-1.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </form>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
     </div>
 </div>
 

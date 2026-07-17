@@ -78,6 +78,23 @@
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
         .dark .card-hover:hover { box-shadow: 0 8px 25px -5px rgba(0,0,0,0.3); }
+
+        @keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-card-in { animation: card-in 0.3s ease-out both; }
+
+        .responsive-table { border-collapse: collapse; width: 100%; }
+        @media (max-width: 767px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; }
+            .responsive-table tr { padding: 12px; background: inherit !important; border-bottom: 1px solid #e5e7eb; }
+            .dark .responsive-table tr { border-bottom-color: #374151; }
+            .responsive-table td { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px !important; text-align: right !important; border: none !important; }
+            .responsive-table td[data-label]::before { content: attr(data-label); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; }
+            .dark .responsive-table td[data-label]::before { color: #9ca3af; }
+            .responsive-table td.hidden { display: none !important; }
+            .responsive-table td.no-label { display: block !important; width: 100% !important; padding: 0 !important; text-align: left !important; }
+            .responsive-table td.no-label::before { display: none !important; }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7"></script>

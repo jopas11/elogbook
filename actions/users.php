@@ -49,8 +49,8 @@ if ($action === 'create') {
         redirect('users.php');
     }
 
-    if ($password && $target['role'] === 'admin' && $id != $user['id']) {
-        flash('error', 'Tidak bisa mengubah password admin lain.');
+    if ($target['role'] === 'admin' && $id != $user['id']) {
+        flash('error', 'Tidak bisa mengubah data admin lain.');
         redirect('users.php');
     }
 

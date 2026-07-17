@@ -19,26 +19,27 @@ $action = _get($_POST, 'action', '');
 $id = (int)_get($_POST, 'id', 0);
 $nama = trim(_get($_POST, 'nama', ''));
 $type = trim(_get($_POST, 'type', ''));
+$kategori = _get($_POST, 'kategori', '');
 
-if ($action === 'create_jenis' && $nama) {
-    $stmt = $db->prepare("INSERT INTO jenis_spareparts (nama) VALUES (?)");
-    $stmt->execute([$nama]);
+if ($action === 'create_jenis' && $nama && $kategori) {
+    $stmt = $db->prepare("INSERT INTO jenis_spareparts (nama, kategori) VALUES (?, ?)");
+    $stmt->execute([$nama, $kategori]);
     flash('success', 'Jenis sparepart ditambahkan.');
 } elseif ($action === 'update_jenis' && $id && $nama) {
-    $stmt = $db->prepare("UPDATE jenis_spareparts SET nama = ? WHERE id = ? AND type IS NULL");
-    $stmt->execute([$nama, $id]);
+    $stmt = $db->prepare("UPDATE jenis_spareparts SET nama = ?, kategori = ? WHERE id = ? AND type IS NULL");
+    $stmt->execute([$nama, $kategori, $id]);
     flash('success', 'Jenis sparepart diupdate.');
 } elseif ($action === 'delete_jenis' && $id) {
     $stmt = $db->prepare("DELETE FROM jenis_spareparts WHERE id = ? AND type IS NULL");
     $stmt->execute([$id]);
     flash('success', 'Jenis sparepart dihapus.');
-} elseif ($action === 'create_type' && $type) {
+} elseif ($action === 'create_type' && $nama && $type) {
     $stmt = $db->prepare("INSERT INTO jenis_spareparts (nama, type) VALUES (?, ?)");
-    $stmt->execute([$type, $type]);
+    $stmt->execute([$nama, $type]);
     flash('success', 'Type sparepart ditambahkan.');
-} elseif ($action === 'update_type' && $id && $type) {
+} elseif ($action === 'update_type' && $id && $nama && $type) {
     $stmt = $db->prepare("UPDATE jenis_spareparts SET nama = ?, type = ? WHERE id = ? AND type IS NOT NULL");
-    $stmt->execute([$type, $type, $id]);
+    $stmt->execute([$nama, $type, $id]);
     flash('success', 'Type sparepart diupdate.');
 } elseif ($action === 'delete_type' && $id) {
     $stmt = $db->prepare("DELETE FROM jenis_spareparts WHERE id = ? AND type IS NOT NULL");

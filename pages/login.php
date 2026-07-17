@@ -33,9 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     unset($user['password']);
                     session_regenerate_id(true);
                     $_SESSION['user'] = $user;
+                    logAudit('login_berhasil', 'Login berhasil: ' . $user['name'] . ' (' . $user['email'] . ')');
                     flash('success', 'Selamat datang, ' . $user['name'] . '!');
                     redirect('dashboard.php');
                 } else {
+                    logAudit('login_gagal', 'Login gagal: ' . $email);
                     $error = 'Email atau password salah.';
                 }
             } catch (PDOException $e) {
