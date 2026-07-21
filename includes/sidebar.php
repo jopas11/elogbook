@@ -1,4 +1,7 @@
-<?php $currentPage = _get($_GET, 'url', str_replace('.php', '', basename($_SERVER['PHP_SELF']))); ?>
+<?php
+require_once __DIR__ . '/../helpers/functions.php';
+$currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', basename($_SERVER['PHP_SELF']))));
+?>
 <script>
     if (localStorage.getItem('sidebarVisible') === 'false' && window.innerWidth >= 1024) {
         document.write('<style id="pre-collapse">');
