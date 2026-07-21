@@ -248,6 +248,28 @@ class SparepartController {
         $status = _get($_POST, 'status', 'Tersedia');
         $keterangan = trim(_get($_POST, 'keterangan', ''));
 
+        // Optional image upload
+        $imagePath = null;
+        if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['image'];
+            $allowed = array('jpg', 'jpeg', 'png', 'webp');
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, $allowed)) {
+                flash('error', 'Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+                redirect('dashboard.php');
+            }
+            if ($file['size'] > 2 * 1024 * 1024) {
+                flash('error', 'Ukuran foto maksimal 2MB.');
+                redirect('dashboard.php');
+            }
+            $uploadDir = __DIR__ . '/../public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/';
+            if (!is_dir($uploadDir)) { mkdir($uploadDir, 0755, true); }
+            $filename = time() . '_' . bin2hex(openssl_random_pseudo_bytes(4)) . '.' . $ext;
+            if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+                $imagePath = 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $filename;
+            }
+        }
+
         if ($kategori === 'Aset') {
             $raw = array_map('trim', explode(',', trim(_get($_POST, 'serial_number', ''))));
             $raw = array_filter($raw, function($v) { return $v !== ''; });
@@ -262,22 +284,22 @@ class SparepartController {
         $db->beginTransaction();
         try {
             if ($kategori === 'Aset') {
-                $stmt = $db->prepare("INSERT INTO spareparts (user_id, kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)");
+                $stmt = $db->prepare("INSERT INTO spareparts (user_id, kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan, image) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)");
                 foreach ($serialNumbers as $sn) {
-                    $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $sn, $tanggal, $merk, $pic, $department, $status, $keterangan));
+                    $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $sn, $tanggal, $merk, $pic, $department, $status, $keterangan, $imagePath));
                     $inserted++;
                 }
                 $lastId = $db->lastInsertId();
             } else {
-                $stmt = $db->prepare("INSERT INTO spareparts (user_id, kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $quantity, $tanggal, $merk, $pic, $department, $status, $keterangan));
+                $stmt = $db->prepare("INSERT INTO spareparts (user_id, kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan, image) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $quantity, $tanggal, $merk, $pic, $department, $status, $keterangan, $imagePath));
                 $inserted = $quantity;
                 $lastId = $db->lastInsertId();
             }
 
             if ($lastId) {
-                $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, image, tipe_transaksi, status_baru, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, NULL, 'Barang Masuk', ?, ?, ?, ?, ?)");
-                $stmt->execute(array($lastId, $user['id'], $status, $pic, $department, $tanggal, $keterangan));
+                $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, image, tipe_transaksi, status_baru, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, ?, 'Barang Masuk', ?, ?, ?, ?, ?)");
+                $stmt->execute(array($lastId, $user['id'], $imagePath, $status, $pic, $department, $tanggal, $keterangan));
             }
 
             $db->commit();

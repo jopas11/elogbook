@@ -23,7 +23,7 @@ class SparepartKeluarController {
             return '__FLASH_SET__';
         }
 
-        $uploadDir = __DIR__ . '/../public/uploads/spareparts/';
+        $uploadDir = __DIR__ . '/../public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -36,7 +36,7 @@ class SparepartKeluarController {
             return '__FLASH_SET__';
         }
 
-        return 'public/uploads/spareparts/' . $filename;
+        return 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $filename;
     }
 
     public static function nonasetInsert() {

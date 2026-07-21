@@ -532,7 +532,25 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <!-- Tambah Modal -->
 <div x-data="{ 
-    open: false
+    open: false,
+    addFotoPreview: '',
+    addFotoError: '',
+    MAX_FILE_SIZE: 2 * 1024 * 1024,
+    handleAddFoto(e) {
+        var file = e.target.files[0];
+        if (!file) { this.addFotoPreview = ''; return; }
+        if (file.size > this.MAX_FILE_SIZE) {
+            this.addFotoError = 'Ukuran foto ' + (file.size / (1024 * 1024)).toFixed(2) + 'MB melebihi batas 2MB.';
+            e.target.value = '';
+            this.addFotoPreview = '';
+            return;
+        }
+        this.addFotoError = '';
+        var self = this;
+        var reader = new FileReader();
+        reader.onload = function(ev) { self.addFotoPreview = ev.target.result; };
+        reader.readAsDataURL(file);
+    }
 }" 
      x-show="open" 
      x-cloak 
@@ -548,7 +566,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <h3 class="text-lg font-bold text-gray-800 dark:text-white">Tambah Sparepart</h3>
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
         </div>
-        <form method="POST" action="index.php?url=sparepart&action=store" class="p-6 space-y-4">
+        <form method="POST" action="index.php?url=sparepart&action=store" class="p-6 space-y-4" enctype="multipart/form-data">
             <?= csrf() ?>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -605,6 +623,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <div class="col-span-1 sm:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan <span class="text-red-500">*</span></label>
                     <textarea name="keterangan" rows="2" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition"></textarea>
+                </div>
+                <div class="col-span-1 sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
+                    <div class="flex items-start gap-4">
+                        <div class="flex-1">
+                            <input type="file" name="image" accept="image/jpeg,image/png,image/webp"
+                                   @change="handleAddFoto($event)"
+                                   class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/50 transition">
+                        </div>
+                        <div x-show="addFotoPreview" x-cloak class="shrink-0">
+                            <img :src="addFotoPreview" class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB.</p>
+                    <p x-show="addFotoError" x-cloak class="text-xs text-red-500 dark:text-red-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="addFotoError"></span></p>
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
