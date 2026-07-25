@@ -70,17 +70,23 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
             position: fixed;
             top: 0; left: 0; bottom: 0;
             width: 16rem;
-            background: linear-gradient(to bottom, #3730a3, #312e81, #4c1d95);
-            color: white;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(24px) saturate(1.5);
+            -webkit-backdrop-filter: blur(24px) saturate(1.5);
+            border-right: 1px solid rgba(255,255,255,0.5);
+            color: #1e293b;
+            box-shadow: 4px 0 30px rgba(0,0,0,0.04);
             display: flex;
             flex-direction: column;
             z-index: 30;
             transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .dark #sidebar {
-            background: linear-gradient(to bottom, #111827, #030712, #030712);
+            background: rgba(18, 18, 26, 0.75);
+            border-right-color: rgba(255,255,255,0.05);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.3);
+            color: #e2e8f0;
         }
         #sidebar.open {
             transform: translateX(0);
@@ -91,14 +97,35 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
             flex: 1;
             overflow: hidden;
         }
+
+        /* Sidebar nav items */
+        #sidebar nav a {
+            position: relative;
+            overflow: hidden;
+        }
+        #sidebar nav a::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            width: 3px; height: 0;
+            background: linear-gradient(180deg, #00d4ff, #8b5cf6);
+            border-radius: 0 4px 4px 0;
+            transition: height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(-50%);
+        }
+        #sidebar nav a.active-nav::before,
+        #sidebar nav a:hover::before {
+            height: 60%;
+        }
+
         @media (min-width: 1024px) {
             #sidebar {
                 transform: translateX(0);
-                transition: width 0.3s ease-in-out;
+                transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .content-wrapper {
                 margin-left: 16rem;
-                transition: margin-left 0.3s ease-in-out;
+                transition: margin-left 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .sidebar-collapsed #sidebar {
                 width: 5rem;
@@ -133,6 +160,9 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
                 justify-content: center;
                 padding: 0.5rem !important;
             }
+            .sidebar-collapsed #sidebar nav a::before {
+                display: none;
+            }
             .sidebar-collapsed #sidebar .menu-label,
             .sidebar-collapsed #sidebar .admin-label,
             .sidebar-collapsed #sidebar hr {
@@ -156,17 +186,17 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
     </style>
 
 <div x-data="sidebar()" :class="{'sidebar-collapsed': isDesktop() && !sidebarVisible}" class="relative min-h-screen">
-    <div x-show="mobileOpen" x-cloak class="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden" @click="closeNav()" x-transition.opacity></div>
+    <div x-show="mobileOpen" x-cloak class="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm lg:hidden" @click="closeNav()" x-transition.opacity></div>
 
     <div id="sidebar" :class="{'open': mobileOpen}">
-    <div class="flex items-center gap-3 px-4 h-16 border-b border-white/10 shrink-0">
-        <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 shadow-inner sidebar-icon-wrap">
+    <div class="flex items-center gap-3 px-4 h-16 border-b border-black/5 dark:border-white/5 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/20 sidebar-icon-wrap">
             <i class="fa-solid fa-boxes-stacked text-white text-sm"></i>
         </div>
         <div class="flex-1 min-w-0 sidebar-name">
-            <h1 class="font-bold text-base truncate tracking-tight"><?= APP_NAME ?></h1>
+            <h1 class="font-bold text-sm truncate tracking-tight gradient-text"><?= APP_NAME ?></h1>
         </div>
-        <button @click="toggleSidebar()" class="flex p-1.5 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition sidebar-toggle" title="Toggle sidebar">
+        <button @click="toggleSidebar()" class="flex p-1.5 rounded-lg text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-600 dark:hover:text-gray-300 transition sidebar-toggle" title="Toggle sidebar">
             <i :class="isDesktop() ? (sidebarVisible ? 'fa-solid fa-chevron-left' : 'fa-solid fa-chevron-right') : 'fa-solid fa-xmark'" class="text-sm"></i>
         </button>
     </div>
@@ -186,56 +216,62 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
     ];
     ?>
     <div class="px-3 pt-3 pb-1">
-        <p class="text-[11px] font-semibold text-white/40 uppercase tracking-widest px-3 menu-label">Menu</p>
+        <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] px-3 menu-label">Menu</p>
     </div>
-    <nav class="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5">
+    <nav class="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
         <?php foreach ($navItems as $item):
             $active = $currentPage === str_replace('.php', '', $item['url']);
         ?>
         <a href="<?= pageUrl($item['url']) ?>" @click="closeNav()"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 <?= $active ? 'bg-white/20 text-white shadow-lg shadow-indigo-500/20' : 'text-white/70 hover:bg-white/10 hover:text-white hover:translate-x-0.5' ?>">
-            <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-sm"></i>
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 <?= $active ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.1)] active-nav' : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200' ?>">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= $active ? 'bg-cyan-500/15' : 'bg-transparent' ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-center text-sm <?= $active ? 'text-cyan-500 dark:text-cyan-400' : '' ?>"></i>
+            </div>
             <span><?= $item['label'] ?></span>
         </a>
         <?php endforeach; ?>
         <?php if (isAdmin()): ?>
-        <hr class="border-white/10 my-2">
-        <p class="text-[11px] font-semibold text-white/40 uppercase tracking-widest px-3 mb-1 admin-label">Admin</p>
+        <hr class="border-black/5 dark:border-white/5 my-2">
+        <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] px-3 mb-1 admin-label">Admin</p>
         <?php foreach ($adminItems as $item):
             $active = $currentPage === str_replace('.php', '', $item['url']);
         ?>
         <a href="<?= pageUrl($item['url']) ?>" @click="closeNav()"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 <?= $active ? 'bg-white/20 text-white shadow-lg shadow-indigo-500/20' : 'text-white/70 hover:bg-white/10 hover:text-white hover:translate-x-0.5' ?>">
-            <i class="fa-solid <?= $item['icon'] ?> w-5 text-center text-sm"></i>
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 <?= $active ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.1)] active-nav' : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200' ?>">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= $active ? 'bg-cyan-500/15' : 'bg-transparent' ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-center text-sm <?= $active ? 'text-cyan-500 dark:text-cyan-400' : '' ?>"></i>
+            </div>
             <span><?= $item['label'] ?></span>
         </a>
         <?php endforeach; ?>
         <?php endif; ?>
     </nav>
 
-    <div class="border-t border-white/10 p-3 space-y-2 shrink-0 bottom-section">
+    <div class="border-t border-black/5 dark:border-white/5 p-3 space-y-2 shrink-0 bottom-section">
         <button @click="toggleDark()"
-                class="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 bottom-btn">
-            <i :class="isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'" class="w-5 text-center text-sm"></i>
+                class="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200 bottom-btn">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                <i :class="isDark ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-indigo-400'" class="text-sm"></i>
+            </div>
             <span class="bottom-label" x-text="isDark ? 'Mode Terang' : 'Mode Gelap'"></span>
         </button>
 
-        <div class="flex items-center gap-3 px-3 py-2 bottom-section bottom-user">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg shadow-indigo-500/30">
+        <div class="flex items-center gap-3 px-3 py-2 rounded-xl bg-black/3 dark:bg-white/3 bottom-section bottom-user">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg shadow-cyan-500/20">
                 <?= strtoupper(substr($user['name'], 0, 1)) ?>
             </div>
             <div class="bottom-label min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                <span class="text-sm font-semibold truncate"><?= escape($user['name']) ?></span>
+                <span class="text-[13px] font-semibold truncate text-gray-800 dark:text-gray-200"><?= escape($user['name']) ?></span>
                 <span class="shrink-0"><?= getRoleBadge($user['role']) ?></span>
             </div>
         </div>
         <div class="flex gap-1 bottom-section">
             <a href="<?= pageUrl('profile.php') ?>" @click="closeNav()"
-               class="bottom-btn flex-1 flex items-center justify-center gap-1.5 text-xs px-2 py-1.5 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all duration-200">
+               class="bottom-btn flex-1 flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-xl text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-200">
                 <i class="fa-solid fa-user"></i> <span class="bottom-label">Profil</span>
             </a>
             <a href="#" @click.prevent="showLogoutModal = true"
-               class="bottom-btn flex-1 flex items-center justify-center gap-1.5 text-xs px-2 py-1.5 rounded-xl text-red-300/70 hover:bg-red-500/20 hover:text-red-200 transition-all duration-200">
+               class="bottom-btn flex-1 flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200">
                 <i class="fa-solid fa-right-from-bracket"></i> <span class="bottom-label">Logout</span>
             </a>
         </div>
@@ -246,12 +282,12 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
     <div class="content-wrapper min-h-screen pt-4 lg:pt-6 p-4 lg:p-6 page-enter">
     <!-- Top bar: shown when sidebar is closed (mobile or desktop collapsed) -->
     <div x-show="isDesktop() ? !sidebarVisible : !mobileOpen" x-cloak
-         class="flex items-center gap-3 px-4 h-14 mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-        <button @click="toggleSidebar()" class="lg:hidden p-2 -ml-1 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+         class="flex items-center gap-3 px-4 h-14 mb-6 glass-panel-strong rounded-xl shadow-sm">
+        <button @click="toggleSidebar()" class="lg:hidden p-2 -ml-1 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 transition">
             <i class="fa-solid fa-bars text-lg"></i>
         </button>
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shadow-md shrink-0">
             <i class="fa-solid fa-boxes-stacked text-white text-sm"></i>
         </div>
-        <h1 class="font-bold text-base text-gray-800 dark:text-white"><?= APP_NAME ?></h1>
+        <h1 class="font-bold text-sm text-gray-800 dark:text-white"><?= APP_NAME ?></h1>
     </div>

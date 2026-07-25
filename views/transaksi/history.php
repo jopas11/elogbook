@@ -44,33 +44,33 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
 <div x-data="history()" class="page-enter">
-    <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
+    <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">History</span>
     </nav>
 
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">History Logbook</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white gradient-text">History Logbook</h2>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
+    <div class="glass-panel p-4 mb-6">
         <form method="GET" action="index.php" class="flex flex-wrap gap-3 items-end">
             <input type="hidden" name="url" value="history">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Jenis, PIC, transaksi..." class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Jenis, PIC, transaksi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Dari Tanggal</label>
-                <input type="date" name="date_from" value="<?= escape(_get($_GET, 'date_from', '')) ?>" class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="date" name="date_from" value="<?= escape(_get($_GET, 'date_from', '')) ?>" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Sampai Tanggal</label>
-                <input type="date" name="date_to" value="<?= escape(_get($_GET, 'date_to', '')) ?>" class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="date" name="date_to" value="<?= escape(_get($_GET, 'date_to', '')) ?>" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
                     <i class="fa-solid fa-filter"></i> Filter
                 </button>
                 <a href="<?= pageUrl('history.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">
@@ -80,7 +80,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </form>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="glass-panel overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm responsive-table">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
@@ -104,11 +104,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td data-label="Sparepart" class="text-gray-700 dark:text-gray-300"><?= escape($log['jenis_sparepart']) ?></td>
                         <td data-label="Transaksi">
                             <span class="px-2 py-1 text-xs font-medium rounded-full
-                                <?= $log['tipe_transaksi'] === 'Barang Masuk' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : '' ?>
-                                <?= $log['tipe_transaksi'] === 'Barang Keluar' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : '' ?>
-                                <?= $log['tipe_transaksi'] === 'Ubah Status' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : '' ?>
-                                <?= $log['tipe_transaksi'] === 'Dalam Perbaikan' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : '' ?>
-                                <?= $log['tipe_transaksi'] === 'Permintaan' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : '' ?>
+                                <?= $log['tipe_transaksi'] === 'Barang Masuk' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' : '' ?>
+                                <?= $log['tipe_transaksi'] === 'Barang Keluar' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' : '' ?>
+                                <?= $log['tipe_transaksi'] === 'Ubah Status' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' : '' ?>
+                                <?= $log['tipe_transaksi'] === 'Dalam Perbaikan' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : '' ?>
+                                <?= $log['tipe_transaksi'] === 'Permintaan' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400' : '' ?>
                             "><?= escape($log['tipe_transaksi']) ?></span>
                         </td>
                         <td data-label="Status"><?= renderStatusTransition($log) ?></td>

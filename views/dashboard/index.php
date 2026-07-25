@@ -40,14 +40,6 @@ if (isAdmin()) {
     $recentLogs = $stmt->fetchAll();
 }
 
-// Per category stats
-$catStats = $db->query("
-    SELECT kategori, COUNT(*) as total,
-        SUM(CASE WHEN status = 'Tersedia' THEN 1 ELSE 0 END) as tersedia
-    FROM spareparts WHERE deleted_at IS NULL
-    GROUP BY kategori
-")->fetchAll();
-
 // Barang yang Dipakai
 if (isAdmin()) {
     $dipakai = $db->query("
@@ -163,33 +155,34 @@ function sortUrl($key, $currentSort, $currentDir) {
 function sortIcon($key, $currentSort, $currentDir) {
     if ($currentSort !== $key) return '<i class="fa-solid fa-sort text-[9px] ml-1 opacity-30"></i>';
     $arrow = $currentDir === 'DESC' ? 'fa-sort-down' : 'fa-sort-up';
-    return '<i class="fa-solid ' . $arrow . ' text-[9px] ml-1 text-indigo-500"></i>';
+    return '<i class="fa-solid ' . $arrow . ' text-[9px] ml-1 text-cyan-500"></i>';
 }
 
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
-<div x-data="dashboard()" class="page-enter">
-    <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
+<div x-data="dashboard()" class="page-enter relative z-10">
+    <div id="dashboard-particles" class="fixed inset-0 pointer-events-none z-0"></div>
+    <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4 relative z-10">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Dashboard</span>
     </nav>
 
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-extrabold text-gray-800 dark:text-white tracking-tight">Dashboard</h2>
+            <h2 class="text-3xl font-extrabold text-gray-800 dark:text-white tracking-tight gradient-text">Dashboard</h2>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="<?= pageUrl('export_csv.php') ?>?<?= http_build_query($_GET) ?>" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-xl hover:from-emerald-700 hover:to-teal-600 transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-md shadow-emerald-500/20">
+            <a href="<?= pageUrl('export_csv.php') ?>?<?= http_build_query($_GET) ?>" class="px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-xl hover:from-emerald-500 hover:to-teal-400 transition-all text-base font-semibold inline-flex items-center gap-2 shadow-md shadow-emerald-500/20 magnetic-btn">
                 <i class="fa-solid fa-file-csv"></i> CSV
             </a>
-            <a href="<?= pageUrl('export_pdf.php') ?>?<?= http_build_query($_GET) ?>" class="px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-500 text-white rounded-xl hover:from-red-700 hover:to-rose-600 transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-md shadow-red-500/20">
+            <a href="<?= pageUrl('export_pdf.php') ?>?<?= http_build_query($_GET) ?>" class="px-5 py-3 bg-gradient-to-r from-red-600 to-rose-500 text-white rounded-xl hover:from-red-500 hover:to-rose-400 transition-all text-base font-semibold inline-flex items-center gap-2 shadow-md shadow-red-500/20 magnetic-btn">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
             <?php if (isAdmin()): ?>
-            <button @click="openModal('tambah')" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-md shadow-indigo-500/20">
+            <button @click="openModal('tambah')" class="px-5 py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-xl hover:from-cyan-400 hover:to-violet-400 transition-all text-base font-semibold inline-flex items-center gap-2 shadow-md shadow-cyan-500/20 magnetic-btn">
                 <i class="fa-solid fa-plus"></i> Tambah Data
             </button>
             <?php endif; ?>
@@ -199,28 +192,28 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <div x-show="lastUpdate" class="text-xs text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1.5">
         <i class="fa-solid fa-rotate text-[10px]" :class="refreshing ? 'fa-spin' : ''"></i>
         <span>Terakhir diperbarui: <span x-text="lastUpdate"></span></span>
-        <button @click="forceRefresh()" class="text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400 transition ml-1" title="Refresh sekarang">
+        <button @click="forceRefresh()" class="text-cyan-500 hover:text-cyan-400 transition ml-1" title="Refresh sekarang">
             <i class="fa-solid fa-arrows-rotate text-xs"></i>
         </button>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         <template x-for="card in statCards" :key="card.key">
-            <div class="card-hover bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 overflow-hidden relative">
+            <div class="card-hover glass-panel rounded-xl p-5 overflow-hidden relative">
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-lg"
                          :class="card.iconBg">
                         <i :class="card.icon + ' ' + card.iconColor"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium" x-text="card.label"></p>
-                        <p class="text-xl font-extrabold tracking-tight truncate"
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider" x-text="card.label"></p>
+                        <p class="text-2xl font-extrabold tracking-tight truncate counter-value font-mono"
                            :class="card.textColor"
                            x-text="card.value.toLocaleString()">
                         </p>
                     </div>
                 </div>
-                <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r"
+                <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r opacity-60"
                      :class="card.barGradient"
                      :style="'width: ' + card.barWidth + '%'"></div>
             </div>
@@ -228,31 +221,31 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-        <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 card-hover">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie text-indigo-500"></i>
+        <div class="xl:col-span-2 glass-panel rounded-xl p-6 card-hover">
+            <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-cyan-500"></i>
                 Komposisi Status Sparepart
             </h3>
-            <div class="relative" style="max-height: 260px;">
+            <div class="relative" style="max-height: 280px;">
                 <canvas id="statusChart"></canvas>
             </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 card-hover">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
+        <div class="glass-panel rounded-xl p-6 card-hover">
+            <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-cyan-500"></i>
                 Aktivitas Terbaru
             </h3>
             <div class="space-y-3">
                 <?php if (empty($recentLogs)): ?>
                 <div class="flex flex-col items-center gap-2 py-8 text-gray-400 dark:text-gray-500">
                     <i class="fa-solid fa-clock text-3xl"></i>
-                    <p class="text-sm">Belum ada aktivitas.</p>
+                    <p class="text-base">Belum ada aktivitas.</p>
                 </div>
                 <?php else: ?>
                     <?php foreach ($recentLogs as $log): ?>
                     <div class="flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold shadow-sm
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold shadow-sm
                             <?= $log['tipe_transaksi'] === 'Barang Masuk' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : '' ?>
                             <?= $log['tipe_transaksi'] === 'Barang Keluar' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : '' ?>
                             <?= $log['tipe_transaksi'] === 'Ubah Status' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' : '' ?>
@@ -267,11 +260,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             "></i>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
                                 <?= escape($log['jenis_sparepart']) ?>
                                 <span class="text-gray-400 dark:text-gray-500 font-normal">— <?= escape($log['tipe_transaksi']) ?></span>
                             </p>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
                                 <?= escape($log['user_name']) ?> • <?= formatTanggal($log['tanggal']) ?>
                             </p>
                         </div>
@@ -282,15 +275,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 card-hover">
-        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <i class="fa-solid fa-bag-shopping text-indigo-500"></i>
+    <div class="glass-panel rounded-xl mb-6 card-hover">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <i class="fa-solid fa-bag-shopping text-cyan-500"></i>
                 Barang yang Dipakai dalam 24 Jam Terakhir
-                <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(<span x-text="dipakai.length"></span> item)</span>
+                <span class="text-sm font-normal text-gray-400 dark:text-gray-500">(<span x-text="dipakai.length"></span> item)</span>
             </h3>
             <div class="flex items-center gap-2">
-                <span class="text-[10px] text-gray-400 dark:text-gray-500" x-show="dipakai.length > 0">
+                <span class="text-xs text-gray-400 dark:text-gray-500" x-show="dipakai.length > 0">
                     <i class="fa-solid fa-rotate mr-0.5" :class="refreshing ? 'fa-spin' : ''"></i>
                     Auto-refresh
                 </span>
@@ -298,48 +291,48 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
         <div x-show="dipakai.length === 0" class="flex flex-col items-center gap-2 py-8 text-gray-400 dark:text-gray-500">
             <i class="fa-solid fa-box-open text-3xl"></i>
-            <p class="text-sm">Tidak ada barang yang dipakai.</p>
+            <p class="text-base">Tidak ada barang yang dipakai.</p>
         </div>
         <div x-show="dipakai.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 p-4" style="max-height: 480px; overflow-y: auto;">
             <template x-for="(item, idx) in dipakai" :key="item.id">
                 <div class="relative group bg-gradient-to-br from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 p-4 transition-all duration-300 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:-translate-y-0.5">
                     <div class="flex items-start justify-between mb-2">
                         <div class="flex items-center gap-2 min-w-0">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/30 flex items-center justify-center shrink-0 relative">
-                                <i class="fa-solid fa-box text-red-600 dark:text-red-400 text-xs"></i>
+                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/30 flex items-center justify-center shrink-0 relative">
+                                <i class="fa-solid fa-box text-red-600 dark:text-red-400 text-sm"></i>
                                 <span x-show="item.pic === userPicName"
-                                      class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center"
+                                      class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center"
                                       title="Barang Anda">
-                                    <i class="fa-solid fa-check text-white" style="font-size: 6px;"></i>
+                                    <i class="fa-solid fa-check text-white" style="font-size: 8px;"></i>
                                 </span>
                             </div>
                             <div class="min-w-0">
                                 <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate" x-text="item.jenis_sparepart"></p>
-                                <p class="text-xs text-gray-400 dark:text-gray-500 truncate" x-text="item.merk || '-'"></p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 truncate" x-text="item.merk || '-'"></p>
                             </div>
                         </div>
-                        <span class="shrink-0 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full"
+                        <span class="shrink-0 inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full"
                               :class="statusBadgeClass(item.status)" x-text="item.status"></span>
                     </div>
-                    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mt-2">
+                    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm mt-2">
                         <div class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <i class="fa-solid fa-barcode text-[10px]"></i>
+                            <i class="fa-solid fa-barcode text-xs"></i>
                             <span class="font-mono font-medium text-gray-700 dark:text-gray-300" x-text="(item.serial_number || '').replace(/^SN-/, '')"></span>
                         </div>
                         <div class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <i class="fa-solid fa-tag text-[10px]"></i>
+                            <i class="fa-solid fa-tag text-xs"></i>
                             <span x-text="item.kategori"></span>
                         </div>
                         <div class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <i class="fa-solid fa-user text-[10px]"></i>
+                            <i class="fa-solid fa-user text-xs"></i>
                             <span class="font-medium text-gray-700 dark:text-gray-300" x-text="item.pic || '-'"></span>
                         </div>
                         <div class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <i class="fa-solid fa-building text-[10px]"></i>
+                            <i class="fa-solid fa-building text-xs"></i>
                             <span x-text="item.department || '-'"></span>
                         </div>
                         <div class="text-gray-500 dark:text-gray-400 flex items-center gap-1 col-span-2">
-                            <i class="fa-solid fa-calendar text-[10px]"></i>
+                            <i class="fa-solid fa-calendar text-xs"></i>
                             <span x-text="item.tanggal"></span>
                         </div>
                     </div>
@@ -350,10 +343,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                  @click="toggleImageZoom('<?= APP_URL ?>/' + item.image, item.jenis_sparepart)"
                                  loading="lazy">
                         </template>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 truncate" x-text="item.keterangan ? 'Keterangan: ' + item.keterangan : '-'"></p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 truncate" x-text="item.keterangan ? 'Keterangan: ' + item.keterangan : '-'"></p>
                     </div>
                     <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span class="text-[10px] text-gray-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-sm">
+                        <span class="text-xs text-gray-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded shadow-sm">
                             #<span x-text="idx + 1"></span>
                         </span>
                     </div>
@@ -362,24 +355,24 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6 card-hover">
+    <div class="glass-panel rounded-xl p-5 mb-6 card-hover">
         <form method="GET" action="index.php" class="flex flex-wrap gap-3 items-end">
             <input type="hidden" name="url" value="dashboard">
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Cari</label>
-                <input type="text" name="search" value="<?= escape(_get($_GET, 'search', '')) ?>" placeholder="Cari SN, jenis, merk..." class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all duration-200 placeholder:text-gray-400">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Cari</label>
+                <input type="text" name="search" value="<?= escape(_get($_GET, 'search', '')) ?>" placeholder="Cari SN, jenis, merk..." class="px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 placeholder:text-gray-400">
             </div>
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Kategori</label>
-                <select name="kategori" class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all duration-200">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Kategori</label>
+                <select name="kategori" class="px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <option value="Aset" <?= _get($_GET, 'kategori', '') === 'Aset' ? 'selected' : '' ?>>Aset</option>
                     <option value="Non-Aset" <?= _get($_GET, 'kategori', '') === 'Non-Aset' ? 'selected' : '' ?>>Non-Aset</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Jenis</label>
-                <select name="jenis" class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all duration-200">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Jenis</label>
+                <select name="jenis" class="px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <?php foreach ($jenisList as $j): ?>
                     <option value="<?= escape($j) ?>" <?= _get($_GET, 'jenis', '') === $j ? 'selected' : '' ?>><?= escape($j) ?></option>
@@ -387,8 +380,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Status</label>
-                <select name="status" class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all duration-200">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Status</label>
+                <select name="status" class="px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <option value="Tersedia" <?= _get($_GET, 'status', '') === 'Tersedia' ? 'selected' : '' ?>>Tersedia</option>
                     <option value="Terpakai" <?= _get($_GET, 'status', '') === 'Terpakai' ? 'selected' : '' ?>>Terpakai</option>
@@ -397,111 +390,112 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Dari</label>
-                <input type="date" name="date_from" value="<?= escape(_get($_GET, 'date_from', '')) ?>" class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all duration-200">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Dari</label>
+                <input type="date" name="date_from" value="<?= escape(_get($_GET, 'date_from', '')) ?>" class="px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div>
-                <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Sampai</label>
-                <input type="date" name="date_to" value="<?= escape(_get($_GET, 'date_to', '')) ?>" class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all duration-200">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Sampai</label>
+                <input type="date" name="date_to" value="<?= escape(_get($_GET, 'date_to', '')) ?>" class="px-3 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition-all font-semibold inline-flex items-center gap-1.5 shadow-md shadow-indigo-500/20">
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-xl text-base hover:from-cyan-400 hover:to-violet-400 transition-all font-semibold inline-flex items-center gap-1.5 shadow-md shadow-cyan-500/20 magnetic-btn">
                     <i class="fa-solid fa-filter"></i> Filter
                 </button>
-                <a href="<?= pageUrl('dashboard.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-semibold inline-flex items-center gap-1.5">
+                <a href="<?= pageUrl('dashboard.php') ?>" class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-base hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-semibold inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-rotate"></i> Reset
                 </a>
             </div>
         </form>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden card-hover">
+    <div class="glass-panel rounded-xl overflow-hidden card-hover">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm dashboard-sortable-table">
+            <table class="w-full text-base dashboard-sortable-table">
                 <thead>
-                    <tr class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700/80 dark:to-gray-700/50 text-gray-600 dark:text-gray-300">
-                        <th class="px-4 py-3.5 text-left font-semibold text-[11px] uppercase tracking-wider w-10 hidden sm:table-cell"></th>
-                        <th class="px-4 py-3.5 text-left font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('kategori', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center">Kategori<?= sortIcon('kategori', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-left font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('jenis', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center">Jenis<?= sortIcon('jenis', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-left font-semibold text-[11px] uppercase tracking-wider hidden lg:table-cell"><a href="<?= sortUrl('type', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center">Type<?= sortIcon('type', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-left font-semibold text-[11px] uppercase tracking-wider hidden md:table-cell"><a href="<?= sortUrl('latest', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center">Merk<?= sortIcon('latest', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('total', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center justify-center">Total<?= sortIcon('total', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('tersedia', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>T<?= sortIcon('tersedia', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('terpakai', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2 h-2 rounded-full bg-red-500"></span>P<?= sortIcon('terpakai', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('rusak', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>R<?= sortIcon('rusak', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider"><a href="<?= sortUrl('perbaikan', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2 h-2 rounded-full bg-blue-500"></span>PR<?= sortIcon('perbaikan', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider hidden sm:table-cell">PIC</th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider hidden lg:table-cell"><a href="<?= sortUrl('updated', $sortKey, $sortDir) ?>" class="hover:text-indigo-600 transition inline-flex items-center justify-center">Update<?= sortIcon('updated', $sortKey, $sortDir) ?></a></th>
-                        <th class="px-4 py-3.5 text-center font-semibold text-[11px] uppercase tracking-wider">Aksi</th>
+                    <tr class="bg-gradient-to-r from-cyan-500/5 to-violet-500/5 dark:from-white/5 dark:to-white/3 text-gray-600 dark:text-gray-300">
+                        <th class="px-4 py-4 text-left font-semibold text-xs uppercase tracking-wider w-10 hidden sm:table-cell"></th>
+                        <th class="px-4 py-4 text-left font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('kategori', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center">Kategori<?= sortIcon('kategori', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-left font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('jenis', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center">Jenis<?= sortIcon('jenis', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-left font-semibold text-xs uppercase tracking-wider hidden lg:table-cell"><a href="<?= sortUrl('type', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center">Type<?= sortIcon('type', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-left font-semibold text-xs uppercase tracking-wider hidden md:table-cell"><a href="<?= sortUrl('latest', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center">Merk<?= sortIcon('latest', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('total', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center justify-center">Total<?= sortIcon('total', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('tersedia', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>T<?= sortIcon('tersedia', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('terpakai', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500"></span>P<?= sortIcon('terpakai', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('rusak', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500"></span>R<?= sortIcon('rusak', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider"><a href="<?= sortUrl('perbaikan', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center justify-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>PR<?= sortIcon('perbaikan', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider hidden sm:table-cell">PIC</th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider hidden lg:table-cell"><a href="<?= sortUrl('updated', $sortKey, $sortDir) ?>" class="hover:text-cyan-500 transition inline-flex items-center justify-center">Update<?= sortIcon('updated', $sortKey, $sortDir) ?></a></th>
+                        <th class="px-4 py-4 text-center font-semibold text-xs uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     <?php foreach ($groups as $i => $g): ?>
                     <?php
                         $typeLabel = $g['type_sparepart'] ?: '-';
-                        $typeKey = urlencode(isset($g['type_sparepart']) ? $g['type_sparepart'] : '');
+                        // ** PERBAIKAN: gunakan type mentah, jangan urlencode, cukup escape HTML
+                        $typeRaw = isset($g['type_sparepart']) ? $g['type_sparepart'] : '';
                         $thumbSrc = !empty($g['thumbnail_image']) ? '../' . $g['thumbnail_image'] : '';
                         $lastUpdate = $g['last_updated'] ? date('d/m/Y', strtotime($g['last_updated'])) : '-';
                         $lastPic = $g['last_pic'] ?: '-';
                     ?>
                     <tr class="group-row hover:bg-indigo-50/80 dark:hover:bg-indigo-900/15 transition-all duration-150 cursor-pointer <?= $i % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/60 dark:bg-gray-700/20' ?>"
                         onclick="event.preventDefault(); document.querySelector('[data-detail-btn=\'<?= $i ?>\']').click();">
-                        <td class="px-3 py-3 text-center hidden sm:table-cell no-label">
+                        <td class="px-3 py-4 text-center hidden sm:table-cell no-label">
                             <?php if ($thumbSrc): ?>
-                            <img src="<?= escape($thumbSrc) ?>" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" alt="" loading="lazy" onclick="event.stopPropagation(); toggleImageZoom('<?= escape('../' . $g['thumbnail_image']) ?>', '<?= escape($g['jenis_sparepart']) ?>')">
+                            <img src="<?= escape($thumbSrc) ?>" class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" alt="" loading="lazy" onclick="event.stopPropagation(); toggleImageZoom('<?= escape('../' . $g['thumbnail_image']) ?>', '<?= escape($g['jenis_sparepart']) ?>')">
                             <?php else: ?>
-                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
-                                <i class="fa-solid fa-box text-gray-400 dark:text-gray-500 text-xs"></i>
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
+                                <i class="fa-solid fa-box text-gray-400 dark:text-gray-500 text-sm"></i>
                             </div>
                             <?php endif; ?>
                         </td>
-                        <td data-label="Kategori" class="px-4 py-3"><span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-600"><?= escape($g['kategori']) ?></span></td>
-                        <td data-label="Jenis" class="px-4 py-3 font-bold text-gray-900 dark:text-white text-[13px]"><?= escape($g['jenis_sparepart']) ?></td>
-                        <td data-label="Type" class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs hidden lg:table-cell"><?= escape($typeLabel) ?></td>
-                        <td data-label="Merk" class="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs hidden md:table-cell"><?= escape($g['merk_list'] ?: '-') ?></td>
-                        <td data-label="Total" class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-extrabold text-gray-800 dark:text-gray-200"><?= $g['total'] ?></span>
+                        <td data-label="Kategori" class="px-4 py-4"><span class="px-2.5 py-1 text-sm font-semibold rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-600"><?= escape($g['kategori']) ?></span></td>
+                        <td data-label="Jenis" class="px-4 py-4 font-bold text-gray-900 dark:text-white text-base"><?= escape($g['jenis_sparepart']) ?></td>
+                        <td data-label="Type" class="px-4 py-4 text-gray-600 dark:text-gray-400 text-sm hidden lg:table-cell"><?= escape($typeLabel) ?></td>
+                        <td data-label="Merk" class="px-4 py-4 text-gray-500 dark:text-gray-400 text-sm hidden md:table-cell"><?= escape($g['merk_list'] ?: '-') ?></td>
+                        <td data-label="Total" class="px-4 py-4 text-center">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 text-base font-extrabold text-gray-800 dark:text-gray-200"><?= $g['total'] ?></span>
                         </td>
-                        <td data-label="Tersedia" class="px-4 py-3 text-center">
+                        <td data-label="Tersedia" class="px-4 py-4 text-center">
                             <?php if ($g['tersedia'] > 0): ?>
-                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 ring-1 ring-emerald-600/20 dark:ring-emerald-400/30"><i class="fa-solid fa-check mr-1 text-[8px]"></i><?= $g['tersedia'] ?></span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-sm font-bold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 ring-1 ring-emerald-600/20 dark:ring-emerald-400/30"><i class="fa-solid fa-check mr-1 text-xs"></i><?= $g['tersedia'] ?></span>
                             <?php else: ?>
-                            <span class="text-gray-300 dark:text-gray-600 text-xs font-bold">0</span>
+                            <span class="text-gray-300 dark:text-gray-600 text-sm font-bold">0</span>
                             <?php endif; ?>
                         </td>
-                        <td data-label="Terpakai" class="px-4 py-3 text-center">
+                        <td data-label="Terpakai" class="px-4 py-4 text-center">
                             <?php if ($g['terpakai'] > 0): ?>
-                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 ring-1 ring-red-600/20 dark:ring-red-400/30"><i class="fa-solid fa-arrow-right-from-bracket mr-1 text-[8px]"></i><?= $g['terpakai'] ?></span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-sm font-bold rounded-full bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 ring-1 ring-red-600/20 dark:ring-red-400/30"><i class="fa-solid fa-arrow-right-from-bracket mr-1 text-xs"></i><?= $g['terpakai'] ?></span>
                             <?php else: ?>
-                            <span class="text-gray-300 dark:text-gray-600 text-xs font-bold">0</span>
+                            <span class="text-gray-300 dark:text-gray-600 text-sm font-bold">0</span>
                             <?php endif; ?>
                         </td>
-                        <td data-label="Rusak" class="px-4 py-3 text-center">
+                        <td data-label="Rusak" class="px-4 py-4 text-center">
                             <?php if ($g['rusak'] > 0): ?>
-                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 ring-1 ring-amber-600/20 dark:ring-amber-400/30"><i class="fa-solid fa-triangle-exclamation mr-1 text-[8px]"></i><?= $g['rusak'] ?></span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-sm font-bold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 ring-1 ring-amber-600/20 dark:ring-amber-400/30"><i class="fa-solid fa-triangle-exclamation mr-1 text-xs"></i><?= $g['rusak'] ?></span>
                             <?php else: ?>
-                            <span class="text-gray-300 dark:text-gray-600 text-xs font-bold">0</span>
+                            <span class="text-gray-300 dark:text-gray-600 text-sm font-bold">0</span>
                             <?php endif; ?>
                         </td>
-                        <td data-label="Perbaikan" class="px-4 py-3 text-center">
+                        <td data-label="Perbaikan" class="px-4 py-4 text-center">
                             <?php if ($g['dalam_perbaikan'] > 0): ?>
-                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 ring-1 ring-blue-600/20 dark:ring-blue-400/30"><i class="fa-solid fa-wrench mr-1 text-[8px]"></i><?= $g['dalam_perbaikan'] ?></span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-sm font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 ring-1 ring-blue-600/20 dark:ring-blue-400/30"><i class="fa-solid fa-wrench mr-1 text-xs"></i><?= $g['dalam_perbaikan'] ?></span>
                             <?php else: ?>
-                            <span class="text-gray-300 dark:text-gray-600 text-xs font-bold">0</span>
+                            <span class="text-gray-300 dark:text-gray-600 text-sm font-bold">0</span>
                             <?php endif; ?>
                         </td>
-                        <td data-label="PIC" class="px-4 py-3 text-center text-xs text-gray-600 dark:text-gray-400 hidden sm:table-cell font-medium">
-                            <span class="truncate max-w-[100px] block" title="<?= escape($lastPic) ?>"><?= escape($lastPic) ?></span>
+                        <td data-label="PIC" class="px-4 py-4 text-center text-sm text-gray-600 dark:text-gray-400 hidden sm:table-cell font-medium">
+                            <span class="truncate max-w-[120px] block" title="<?= escape($lastPic) ?>"><?= escape($lastPic) ?></span>
                         </td>
-                        <td data-label="Update" class="px-4 py-3 text-center text-xs text-gray-500 dark:text-gray-500 hidden lg:table-cell font-mono">
+                        <td data-label="Update" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-500 hidden lg:table-cell font-mono">
                             <?= $lastUpdate ?>
                         </td>
-                        <td data-label="Aksi" class="px-4 py-3 text-center no-label">
+                        <td data-label="Aksi" class="px-4 py-4 text-center no-label">
                             <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation();">
-                                <button data-detail-btn="<?= $i ?>" @click="detailGroup('<?= escape($g['kategori']) ?>', '<?= escape($g['jenis_sparepart']) ?>', '<?= $typeKey ?>')" title="Lihat detail" class="p-2 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all hover:scale-110">
+                                <button data-detail-btn="<?= $i ?>" @click="detailGroup('<?= escape($g['kategori']) ?>', '<?= escape($g['jenis_sparepart']) ?>', '<?= escape($typeRaw) ?>')" title="Lihat detail" class="p-2.5 text-sm bg-cyan-500/10 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-lg hover:bg-cyan-500/20 dark:hover:bg-cyan-500/20 transition-all hover:scale-110">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                <button @click="detailGroup('<?= escape($g['kategori']) ?>', '<?= escape($g['jenis_sparepart']) ?>', '<?= $typeKey ?>')" title="Lihat detail" class="p-2 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all hover:scale-110">
+                                <button @click="detailGroup('<?= escape($g['kategori']) ?>', '<?= escape($g['jenis_sparepart']) ?>', '<?= escape($typeRaw) ?>')" title="Lihat detail" class="p-2.5 text-sm bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-all hover:scale-110">
                                     <i class="fa-solid fa-arrow-right"></i>
                                 </button>
                             </div>
@@ -513,9 +507,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td colspan="13" class="px-4 py-16 text-center">
                             <div class="flex flex-col items-center gap-3 text-gray-400 dark:text-gray-500">
                                 <i class="fa-solid fa-box-open text-5xl opacity-50"></i>
-                                <p class="text-sm font-medium">Tidak ada data sparepart.</p>
+                                <p class="text-base font-medium">Tidak ada data sparepart.</p>
                                 <?php if (isAdmin()): ?>
-                                <button @click="openModal('tambah')" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition-all font-semibold inline-flex items-center gap-2 shadow-md shadow-indigo-500/20">
+                                <button @click="openModal('tambah')" class="px-5 py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-xl text-base hover:from-cyan-400 hover:to-violet-400 transition-all font-semibold inline-flex items-center gap-2 shadow-md shadow-cyan-500/20 magnetic-btn">
                                     <i class="fa-solid fa-plus"></i> Tambah Data
                                 </button>
                                 <?php endif; ?>
@@ -561,88 +555,88 @@ require_once __DIR__ . '/../../includes/sidebar.php';
      x-transition:leave="modal-leave-active"
      x-transition:leave-end="modal-leave">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="open = false" x-transition:enter="backdrop-enter-active" x-transition:enter-start="backdrop-enter" x-transition:leave="backdrop-leave-active" x-transition:leave-end="backdrop-leave"></div>
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 rounded-t-2xl">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white">Tambah Sparepart</h3>
-            <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
+    <div class="glass-panel-strong rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10">
+        <div class="px-6 py-4 border-b border-black/5 dark:border-white/5 flex justify-between items-center sticky top-0 glass-panel-strong rounded-t-2xl">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Tambah Sparepart</h3>
+            <button @click="open = false" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition text-xl">&times;</button>
         </div>
-        <form method="POST" action="index.php?url=sparepart&action=store" class="p-6 space-y-4" enctype="multipart/form-data">
+        <form method="POST" action="index.php?url=sparepart&action=store" class="p-6 space-y-5" enctype="multipart/form-data">
             <?= csrf() ?>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori <span class="text-red-500">*</span></label>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Kategori <span class="text-red-500">*</span></label>
                     <select name="kategori" id="add-kategori" required onchange="toggleAddQty(); toggleAddSerial(); filterAddJenis()"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                         <option value="">Pilih Kategori</option>
                         <option value="Aset">Aset</option>
                         <option value="Non-Aset">Non-Aset</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis Sparepart <span class="text-red-500">*</span></label>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Jenis Sparepart <span class="text-red-500">*</span></label>
                     <select name="jenis_sparepart" id="add-jenis" required onchange="filterAddType()"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                         <option value="">Pilih Kategori dulu</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type Sparepart</label>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Type Sparepart</label>
                     <select name="type_sparepart" id="add-type"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                         <option value="">Pilih Jenis dulu</option>
                     </select>
                 </div>
                 <div id="add-qty-wrap">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity <span class="text-red-500">*</span></label>
-                    <input type="number" name="quantity" id="input-qty" value="1" min="1" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Quantity <span class="text-red-500">*</span></label>
+                    <input type="number" name="quantity" id="input-qty" value="1" min="1" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <div id="add-serial-wrap">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Serial Number <span class="text-red-500">*</span></label>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Serial Number <span class="text-red-500">*</span></label>
                     <div class="flex">
-                        <span class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 dark:border-gray-600 dark:bg-gray-600 bg-gray-100 text-gray-600 dark:text-gray-300 rounded-l-lg text-sm font-mono select-none">SN</span>
-                        <input type="text" name="serial_number" required class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-r-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition font-mono" value="<?= escape(old('serial_number')) ?>" placeholder="Pisahkan dengan koma jika lebih dari 1">
+                        <span class="inline-flex items-center px-3 py-2.5 border border-r-0 border-gray-300 dark:border-gray-600 dark:bg-gray-600 bg-gray-100 text-gray-600 dark:text-gray-300 rounded-l-lg text-base font-mono select-none">SN</span>
+                        <input type="text" name="serial_number" required class="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-r-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition font-mono" value="<?= escape(old('serial_number')) ?>" placeholder="Pisahkan dengan koma jika lebih dari 1">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal <span class="text-red-500">*</span></label>
-                    <input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Merk <span class="text-red-500">*</span></label>
-                    <input type="text" name="merk" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Merk <span class="text-red-500">*</span></label>
+                    <input type="text" name="merk" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PIC <span class="text-red-500">*</span></label>
-                    <input type="text" name="pic" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">PIC <span class="text-red-500">*</span></label>
+                    <input type="text" name="pic" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department <span class="text-red-500">*</span></label>
-                    <input type="text" name="department" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Department <span class="text-red-500">*</span></label>
+                    <input type="text" name="department" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
                 <input type="hidden" name="status" value="Tersedia">
                 <div class="col-span-1 sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan <span class="text-red-500">*</span></label>
-                    <textarea name="keterangan" rows="2" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition"></textarea>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Keterangan <span class="text-red-500">*</span></label>
+                    <textarea name="keterangan" rows="2" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition"></textarea>
                 </div>
                 <div class="col-span-1 sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
                     <div class="flex items-start gap-4">
                         <div class="flex-1">
                             <input type="file" name="image" accept="image/jpeg,image/png,image/webp"
                                    @change="handleAddFoto($event)"
-                                   class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/50 transition">
+                                   class="w-full text-base text-gray-500 dark:text-gray-400 file:mr-3 file:py-2.5 file:px-5 file:rounded-lg file:border-0 file:text-base file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/50 transition">
                         </div>
                         <div x-show="addFotoPreview" x-cloak class="shrink-0">
                             <img :src="addFotoPreview" class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
                         </div>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB.</p>
-                    <p x-show="addFotoError" x-cloak class="text-xs text-red-500 dark:text-red-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="addFotoError"></span></p>
+                    <p class="text-sm text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB.</p>
+                    <p x-show="addFotoError" x-cloak class="text-sm text-red-500 dark:text-red-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="addFotoError"></span></p>
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
+                <button type="button" @click="open = false" class="px-5 py-2.5 glass-panel text-gray-700 dark:text-gray-300 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition text-base font-medium">Batal</button>
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg hover:from-cyan-400 hover:to-violet-400 transition text-base font-medium inline-flex items-center gap-1.5 magnetic-btn">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>
@@ -655,6 +649,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     const JENIS_DATA = <?= json_encode($jenisGrouped) ?>;
     const TYPE_DATA = <?= json_encode($typesByJenisKategori) ?>;
+
+    // --- FUNGSI GLOBAL: toggleImageZoom ---
+    function toggleImageZoom(src, title) {
+        Swal.fire({
+            imageUrl: src,
+            imageAlt: title || 'Sparepart',
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: 'auto',
+            background: 'transparent',
+            customClass: {
+                popup: 'zoom-image-popup'
+            }
+        });
+    }
 
     function toggleAddQty() {
         const kat = document.getElementById('add-kategori').value;
@@ -755,17 +764,34 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 const s = this.stats;
                 const maxVal = Math.max(s.total, 1);
                 return [
-                    { key: 'total', label: 'Total', value: s.total, icon: 'fa-solid fa-boxes-stacked', iconBg: 'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/30', iconColor: 'text-indigo-600 dark:text-indigo-400', textColor: 'text-gray-800 dark:text-white', barWidth: (s.total / maxVal) * 100, barGradient: 'from-indigo-500 to-indigo-400' },
-                    { key: 'tersedia', label: 'Tersedia', value: s.tersedia, icon: 'fa-solid fa-check', iconBg: 'bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900/40 dark:to-emerald-800/30', iconColor: 'text-emerald-600 dark:text-emerald-400', textColor: 'text-emerald-600 dark:text-emerald-400', barWidth: (s.tersedia / maxVal) * 100, barGradient: 'from-emerald-500 to-emerald-400' },
-                    { key: 'terpakai', label: 'Terpakai', value: s.terpakai, icon: 'fa-solid fa-circle-xmark', iconBg: 'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/30', iconColor: 'text-red-600 dark:text-red-400', textColor: 'text-red-600 dark:text-red-400', barWidth: (s.terpakai / maxVal) * 100, barGradient: 'from-red-500 to-red-400' },
-                    { key: 'rusak', label: 'Rusak', value: s.rusak, icon: 'fa-solid fa-triangle-exclamation', iconBg: 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/40 dark:to-amber-800/30', iconColor: 'text-amber-600 dark:text-amber-400', textColor: 'text-amber-600 dark:text-amber-400', barWidth: (s.rusak / maxVal) * 100, barGradient: 'from-amber-500 to-amber-400' },
-                    { key: 'perbaikan', label: 'Perbaikan', value: s.dalam_perbaikan, icon: 'fa-solid fa-wrench', iconBg: 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/30', iconColor: 'text-blue-600 dark:text-blue-400', textColor: 'text-blue-600 dark:text-blue-400', barWidth: (s.dalam_perbaikan / maxVal) * 100, barGradient: 'from-blue-500 to-blue-400' },
+                    { key: 'total', label: 'Total', value: s.total, icon: 'fa-solid fa-boxes-stacked', iconBg: 'bg-gradient-to-br from-cyan-500/10 to-violet-500/10', iconColor: 'text-cyan-500 dark:text-cyan-400', textColor: 'text-gray-800 dark:text-white', barWidth: (s.total / maxVal) * 100, barGradient: 'from-cyan-500 to-violet-500' },
+                    { key: 'tersedia', label: 'Tersedia', value: s.tersedia, icon: 'fa-solid fa-check', iconBg: 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5', iconColor: 'text-emerald-500 dark:text-emerald-400', textColor: 'text-emerald-600 dark:text-emerald-400', barWidth: (s.tersedia / maxVal) * 100, barGradient: 'from-emerald-500 to-emerald-400' },
+                    { key: 'terpakai', label: 'Terpakai', value: s.terpakai, icon: 'fa-solid fa-circle-xmark', iconBg: 'bg-gradient-to-br from-red-500/10 to-red-500/5', iconColor: 'text-red-500 dark:text-red-400', textColor: 'text-red-600 dark:text-red-400', barWidth: (s.terpakai / maxVal) * 100, barGradient: 'from-red-500 to-red-400' },
+                    { key: 'rusak', label: 'Rusak', value: s.rusak, icon: 'fa-solid fa-triangle-exclamation', iconBg: 'bg-gradient-to-br from-amber-500/10 to-amber-500/5', iconColor: 'text-amber-500 dark:text-amber-400', textColor: 'text-amber-600 dark:text-amber-400', barWidth: (s.rusak / maxVal) * 100, barGradient: 'from-amber-500 to-amber-400' },
+                    { key: 'perbaikan', label: 'Perbaikan', value: s.dalam_perbaikan, icon: 'fa-solid fa-wrench', iconBg: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5', iconColor: 'text-blue-500 dark:text-blue-400', textColor: 'text-blue-600 dark:text-blue-400', barWidth: (s.dalam_perbaikan / maxVal) * 100, barGradient: 'from-blue-500 to-blue-400' },
                 ];
             },
 
             init() {
                 this.loadChart();
                 this.startPolling();
+                this.initParticles();
+                this.initCounters();
+            },
+
+            initParticles() {
+                var container = document.getElementById('dashboard-particles');
+                if (container) createParticles(container, 15);
+            },
+
+            initCounters() {
+                var self = this;
+                setTimeout(function() {
+                    document.querySelectorAll('.counter-value').forEach(function(el) {
+                        var val = parseInt(el.textContent.replace(/\./g, '').replace(/,/g, ''));
+                        if (val > 0) animateCounter(el, val, 1200);
+                    });
+                }, 300);
             },
 
             startPolling() {
@@ -806,9 +832,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         labels: ['Tersedia', 'Terpakai', 'Rusak', 'Dalam Perbaikan'],
                         datasets: [{
                             data: [this.stats.tersedia, this.stats.terpakai, this.stats.rusak, this.stats.dalam_perbaikan],
-                            backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#6366f1'],
+                            backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#00d4ff'],
                             borderWidth: 2,
-                            borderColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                            borderColor: document.documentElement.classList.contains('dark') ? '#1a1a2e' : '#ffffff',
                         }]
                     },
                     options: {
@@ -872,27 +898,28 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     function darkSwal(opt) {
         var isDark = document.documentElement.classList.contains('dark');
         return Swal.fire(Object.assign({
-            background: isDark ? '#1f2937' : '#ffffff',
-            color: isDark ? '#d1d5db' : '#1f2937',
-            confirmButtonColor: '#4f46e5',
+            background: isDark ? '#1a1a2e' : '#ffffff',
+            color: isDark ? '#e2e8f0' : '#1e293b',
+            confirmButtonColor: '#00d4ff',
         }, opt));
     }
 
     async function renderGroupModal(kategori, jenis, type, page, q) {
         window.dispatchEvent(new CustomEvent('loading-start'));
+        // type sudah string mentah, encode di sini
         const url = 'index.php?url=sparepart&action=list_by_group&kategori=' + encodeURIComponent(kategori) + '&jenis=' + encodeURIComponent(jenis) + '&type=' + encodeURIComponent(type) + '&page=' + (page || 1) + (q ? '&q=' + encodeURIComponent(q) : '');
         try {
             var res = await fetch(url);
             var data = await res.json();
         } catch(e) {
             window.dispatchEvent(new CustomEvent('loading-end'));
-            darkSwal({ icon: 'error', title: 'Koneksi Gagal', text: 'Tidak bisa memuat data. Periksa koneksi internet.', confirmButtonColor: '#4f46e5' });
+            darkSwal({ icon: 'error', title: 'Koneksi Gagal', text: 'Tidak bisa memuat data. Periksa koneksi internet.', confirmButtonColor: '#00d4ff' });
             return;
         }
         window.dispatchEvent(new CustomEvent('loading-end'));
 
         if (!data.success) {
-            darkSwal({ icon: 'error', title: 'Error!', text: data.message || 'Gagal memuat data.', confirmButtonColor: '#4f46e5' });
+            darkSwal({ icon: 'error', title: 'Error!', text: data.message || 'Gagal memuat data.', confirmButtonColor: '#00d4ff' });
             return;
         }
 
@@ -929,15 +956,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         // Search
         html += '<div class="flex gap-2 mb-3">';
         html += '<div class="relative flex-1"><i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>';
-        html += '<input type="text" id="group-search-input" value="' + esc(searchQ) + '" placeholder="Cari SN, merk, PIC..." class="w-full pl-8 pr-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition" onkeydown="if(event.key===\'Enter\'){var v=this.value;renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',1,v)}">';
+        html += '<input type="text" id="group-search-input" value="' + esc(searchQ) + '" placeholder="Cari SN, merk, PIC..." class="w-full pl-8 pr-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition" onkeydown="if(event.key===\'Enter\'){var v=this.value;renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',1,v)}">';
         html += '</div>';
-        html += '<button onclick="renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',1,document.getElementById(\'group-search-input\').value)" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition font-semibold shadow-sm"><i class="fa-solid fa-search mr-1"></i>Cari</button>';
+        html += '<button onclick="renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',1,document.getElementById(\'group-search-input\').value)" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-xl text-sm hover:from-cyan-400 hover:to-violet-400 transition font-semibold shadow-sm magnetic-btn"><i class="fa-solid fa-search mr-1"></i>Cari</button>';
         html += '</div>';
 
         // Table
         html += '<div class="overflow-x-auto max-h-[28rem] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl">';
         html += '<table class="w-full text-sm">';
-        html += '<thead class="sticky top-0 z-10"><tr class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-600/80">';
+        html += '<thead class="sticky top-0 z-10"><tr class="bg-gradient-to-r from-cyan-500/5 to-violet-500/5 dark:from-white/5 dark:to-white/3">';
         html += '<th class="px-3 py-3 text-center font-semibold text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 w-10">#</th>';
         html += '<th class="px-3 py-3 text-center font-semibold text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 w-12 hidden sm:table-cell">Foto</th>';
         html += '<th class="px-3 py-3 text-left font-semibold text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">SN / Qty</th>';
@@ -999,7 +1026,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 html += '<button onclick="renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',' + (curPage - 1) + ',\'' + esc(searchQ) + '\')" class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition font-medium"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>';
             }
             for (var p = Math.max(1, curPage - 2); p <= Math.min(data.totalPages, curPage + 2); p++) {
-                html += '<button onclick="renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',' + p + ',\'' + esc(searchQ) + '\')" class="w-7 h-7 rounded-lg text-xs font-bold transition ' + (p === curPage ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300') + '">' + p + '</button>';
+                html += '<button onclick="renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',' + p + ',\'' + esc(searchQ) + '\')" class="w-7 h-7 rounded-lg text-xs font-bold transition ' + (p === curPage ? 'bg-gradient-to-r from-cyan-500 to-violet-500 text-white shadow-md shadow-cyan-500/30' : 'bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300') + '">' + p + '</button>';
             }
             if (curPage < data.totalPages) {
                 html += '<button onclick="renderGroupModal(\'' + esc(kategori) + '\',\'' + esc(jenis) + '\',\'' + esc(type) + '\',' + (curPage + 1) + ',\'' + esc(searchQ) + '\')" class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition font-medium"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>';
@@ -1008,12 +1035,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         }
 
         darkSwal({
-            title: '<span class="flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center"><i class="fa-solid fa-layer-group text-indigo-600 dark:text-indigo-400 text-sm"></i></span><span>' + esc(data.kategori) + ' — ' + esc(data.jenis) + (data.type && data.type !== '-' ? ' <span class="text-sm font-normal text-gray-400">(' + esc(data.type) + ')</span>' : '') + '</span></span>',
+            title: '<span class="flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-cyan-500/10 dark:bg-cyan-500/10 flex items-center justify-center"><i class="fa-solid fa-layer-group text-cyan-500 dark:text-cyan-400 text-sm"></i></span><span>' + esc(data.kategori) + ' — ' + esc(data.jenis) + (data.type && data.type !== '-' ? ' <span class="text-sm font-normal text-gray-400">(' + esc(data.type) + ')</span>' : '') + '</span></span>',
             html: html,
-            confirmButtonColor: '#4f46e5',
+            confirmButtonColor: '#00d4ff',
             confirmButtonText: '<i class="fa-solid fa-xmark mr-1"></i>Tutup',
             width: '900px',
-            customClass: { popup: 'detail-group-modal' }
+            customClass: { popup: 'detail-group-modal', confirmButton: 'swal2-confirm-cyan' }
         });
     }
 
@@ -1024,12 +1051,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             var data = await res.json();
         } catch(e) {
             window.dispatchEvent(new CustomEvent('loading-end'));
-            darkSwal({ icon: 'error', title: 'Koneksi Gagal', text: 'Tidak bisa memuat data.', confirmButtonColor: '#4f46e5' });
+            darkSwal({ icon: 'error', title: 'Koneksi Gagal', text: 'Tidak bisa memuat data.', confirmButtonColor: '#00d4ff' });
             return;
         }
         window.dispatchEvent(new CustomEvent('loading-end'));
         if (!data.success) {
-            darkSwal({ icon: 'error', title: 'Error!', text: data.message || 'Data tidak ditemukan.', confirmButtonColor: '#4f46e5' });
+            darkSwal({ icon: 'error', title: 'Error!', text: data.message || 'Data tidak ditemukan.', confirmButtonColor: '#00d4ff' });
             return;
         }
 
@@ -1058,10 +1085,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
         // Action buttons
         var actionsHtml = '';
-        actionsHtml += '<button onclick="showHistory(' + sp.id + ')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"><i class="fa-solid fa-clock-rotate-left"></i>Riwayat</button>';
+            actionsHtml += '<button onclick="showHistory(' + sp.id + ')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-semibold hover:bg-blue-500/20 dark:hover:bg-blue-500/20 transition"><i class="fa-solid fa-clock-rotate-left"></i>Riwayat</button>';
         if (isAdmin) {
-            actionsHtml += '<button onclick="showEdit(' + sp.id + ')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition"><i class="fa-solid fa-pen"></i>Edit</button>';
-            actionsHtml += '<button onclick="showHapus(' + sp.id + ')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/50 transition"><i class="fa-solid fa-trash"></i>Hapus</button>';
+            actionsHtml += '<button onclick="showEdit(' + sp.id + ')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl text-xs font-semibold hover:bg-amber-500/20 dark:hover:bg-amber-500/20 transition"><i class="fa-solid fa-pen"></i>Edit</button>';
+            actionsHtml += '<button onclick="showHapus(' + sp.id + ')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-xs font-semibold hover:bg-red-500/20 dark:hover:bg-red-500/20 transition"><i class="fa-solid fa-trash"></i>Hapus</button>';
         }
 
         // Info items
@@ -1129,7 +1156,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         darkSwal({
             title: false,
             html: modalHtml,
-            confirmButtonColor: '#4f46e5',
+            confirmButtonColor: '#00d4ff',
             confirmButtonText: '<i class="fa-solid fa-xmark mr-1"></i>Tutup',
             width: '600px',
             customClass: { popup: 'detail-item-modal', container: 'detail-item-container' }
@@ -1143,7 +1170,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             var data = await res.json();
         } catch(e) {
             window.dispatchEvent(new CustomEvent('loading-end'));
-            darkSwal({ icon: 'error', title: 'Koneksi Gagal', text: 'Tidak bisa memuat riwayat.', confirmButtonColor: '#4f46e5' });
+            darkSwal({ icon: 'error', title: 'Koneksi Gagal', text: 'Tidak bisa memuat riwayat.', confirmButtonColor: '#00d4ff' });
             return;
         }
         window.dispatchEvent(new CustomEvent('loading-end'));
@@ -1199,7 +1226,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         var icon = tipeIcon[l.tipe_transaksi] || 'fa-circle';
                         var isLast = i === pageLogs.length - 1 && currentPage === totalPages;
                         html += '<div class="flex gap-3 relative">';
-                        html += '<div class="flex flex-col items-center"><div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/30 flex items-center justify-center shrink-0 ring-2 ring-white dark:ring-gray-800"><i class="fa-solid ' + icon + ' text-indigo-600 dark:text-indigo-400 text-[10px]"></i></div>' + (isLast ? '' : '<div class="w-px flex-1 bg-gray-200 dark:bg-gray-700 my-1"></div></div>');
+                        html += '<div class="flex flex-col items-center"><div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center shrink-0 ring-2 ring-white dark:ring-gray-800"><i class="fa-solid ' + icon + ' text-cyan-500 dark:text-cyan-400 text-[10px]"></i></div>' + (isLast ? '' : '<div class="w-px flex-1 bg-gray-200 dark:bg-gray-700 my-1"></div></div>');
                         html += '<div class="pb-4 flex-1 min-w-0">';
                         html += '<div class="flex items-center gap-2 flex-wrap mb-1"><span class="px-2 py-0.5 text-[11px] font-bold rounded-full ' + badge + '">' + esc(l.tipe_transaksi) + '</span>';
                         html += '<span class="text-[10px] text-gray-400 dark:text-gray-500 font-mono ml-auto">' + (l.waktu || l.tanggal) + '</span></div>';
@@ -1220,7 +1247,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     }
                     // Page input
                     html += '<input type="number" id="histPageInput" value="' + currentPage + '" min="1" max="' + totalPages + '" class="w-12 h-7 text-center text-xs border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200 focus:ring-1 focus:ring-indigo-500 outline-none">';
-                    html += '<button onclick="window._histPage=parseInt(document.getElementById(\'histPageInput\').value)||1;showHistoryRefresh(' + id + ')" class="h-7 px-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition text-[11px] font-bold"><i class="fa-solid fa-arrow-right text-[10px]"></i></button>';
+                    html += '<button onclick="window._histPage=parseInt(document.getElementById(\'histPageInput\').value)||1;showHistoryRefresh(' + id + ')" class="h-7 px-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:from-cyan-400 hover:to-violet-400 transition text-[11px] font-bold"><i class="fa-solid fa-arrow-right text-[10px]"></i></button>';
                     if (currentPage < totalPages) {
                         html += '<button onclick="window._histPage=' + (currentPage + 1) + ';showHistoryRefresh(' + id + ')" class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition text-gray-600 dark:text-gray-300"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>';
                     }
@@ -1228,9 +1255,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 }
 
                 darkSwal({
-                    title: '<span class="flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-sm"></i></span>Riwayat Sparepart #' + id + '</span>',
+                    title: '<span class="flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/10 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left text-blue-500 dark:text-blue-400 text-sm"></i></span>Riwayat Sparepart #' + id + '</span>',
                     html: html,
-                    confirmButtonColor: '#4f46e5',
+                    confirmButtonColor: '#00d4ff',
                     confirmButtonText: '<i class="fa-solid fa-xmark mr-1"></i>Tutup',
                     width: '550px',
                     customClass: { popup: 'history-modal' },
@@ -1317,7 +1344,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </form>
                 `,
                 showCancelButton: true,
-                confirmButtonColor: '#4f46e5',
+                confirmButtonColor: '#00d4ff',
                 cancelButtonText: 'Batal',
                 confirmButtonText: 'Simpan',
                 didOpen: () => {
@@ -1333,9 +1360,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 }
             }).then(result => {
                 if (result.isConfirmed && result.value.success) {
-                    darkSwal({ icon: 'success', title: 'Berhasil!', text: 'Data sparepart diupdate.', confirmButtonColor: '#4f46e5' }).then(() => location.reload());
+                    darkSwal({ icon: 'success', title: 'Berhasil!', text: 'Data sparepart diupdate.', confirmButtonColor: '#00d4ff' }).then(() => location.reload());
                 } else if (result.value) {
-                    darkSwal({ icon: 'error', title: 'Error!', text: result.value.message || 'Gagal update.', confirmButtonColor: '#4f46e5' });
+                    darkSwal({ icon: 'error', title: 'Error!', text: result.value.message || 'Gagal update.', confirmButtonColor: '#00d4ff' });
                 }
             });
         }
@@ -1363,9 +1390,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     .then(data => {
                         window.dispatchEvent(new CustomEvent('loading-end'));
                         if (data.success) {
-                            darkSwal({ icon: 'success', title: 'Berhasil!', text: 'Sparepart dihapus.', confirmButtonColor: '#4f46e5' }).then(() => location.reload());
+                            darkSwal({ icon: 'success', title: 'Berhasil!', text: 'Sparepart dihapus.', confirmButtonColor: '#00d4ff' }).then(() => location.reload());
                         } else {
-                            darkSwal({ icon: 'error', title: 'Error!', text: data.message || 'Gagal hapus.', confirmButtonColor: '#4f46e5' });
+                            darkSwal({ icon: 'error', title: 'Error!', text: data.message || 'Gagal hapus.', confirmButtonColor: '#00d4ff' });
                         }
                     });
             }

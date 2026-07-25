@@ -15,26 +15,26 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
 <div x-data="jenis()" class="page-enter">
-    <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
+    <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Jenis & Type</span>
     </nav>
 
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Kelola Jenis & Type Sparepart</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white gradient-text">Kelola Jenis & Type Sparepart</h2>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div class="glass-panel p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Daftar Jenis Sparepart</h3>
-                <button @click="openModal('jenis', 'tambah')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1">
+                <button @click="openModal('jenis', 'tambah')" class="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-xs hover:from-cyan-400 hover:to-violet-400 magnetic-btn transition font-medium inline-flex items-center gap-1">
                     <i class="fa-solid fa-plus"></i> Tambah
                 </button>
             </div>
             <div class="mb-3">
-                <input type="text" x-model="jenisSearch" placeholder="Cari jenis..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="text" x-model="jenisSearch" placeholder="Cari jenis..." class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div class="space-y-2">
                 <?php foreach ($jenisList as $j): ?>
@@ -43,7 +43,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div class="min-w-0 flex-1 flex items-center gap-2">
                         <span class="text-sm text-gray-700 dark:text-gray-300"><?= escape($j['nama']) ?></span>
                         <?php if ($j['kategori']): ?>
-                        <span class="text-xs px-1.5 py-0.5 rounded-full <?= $j['kategori'] === 'Aset' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' ?>"><?= escape($j['kategori']) ?></span>
+                        <span class="text-xs px-1.5 py-0.5 rounded-full <?= $j['kategori'] === 'Aset' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' ?>"><?= escape($j['kategori']) ?></span>
                         <?php endif; ?>
                     </div>
                     <div class="flex gap-1 shrink-0">
@@ -67,15 +67,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div class="glass-panel p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Daftar Type Sparepart</h3>
-                <button @click="openModal('type', 'tambah')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1">
+                <button @click="openModal('type', 'tambah')" class="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-xs hover:from-cyan-400 hover:to-violet-400 magnetic-btn transition font-medium inline-flex items-center gap-1">
                     <i class="fa-solid fa-plus"></i> Tambah
                 </button>
             </div>
             <div class="mb-3">
-                <input type="text" x-model="typeSearch" placeholder="Cari type..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="text" x-model="typeSearch" placeholder="Cari type..." class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div class="space-y-2">
                 <?php foreach ($typeList as $t): ?>
@@ -115,7 +115,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
      x-transition:enter="modal-enter-active" x-transition:enter-start="modal-enter"
      x-transition:leave="modal-leave-active" x-transition:leave-end="modal-leave">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="open = false" x-transition:enter="backdrop-enter-active" x-transition:enter-start="backdrop-enter" x-transition:leave="backdrop-leave-active" x-transition:leave-end="backdrop-leave"></div>
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md relative z-10">
+    <div class="glass-panel rounded-2xl shadow-xl w-full max-w-md relative z-10">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="title"></h3>
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
@@ -131,7 +131,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori <span class="text-red-500">*</span></label>
                         <select name="kategori" x-model="kategori" required
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                                class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                             <option value="">Pilih Kategori</option>
                             <option value="Aset">Aset</option>
                             <option value="Non-Aset">Non-Aset</option>
@@ -140,7 +140,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama <span class="text-red-500">*</span></label>
                         <input type="text" name="nama" x-model="nama" required
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                               class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     </div>
                 </div>
             </template>
@@ -151,7 +151,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis <span class="text-red-500">*</span></label>
                         <select name="nama" x-model="nama" required
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                                class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                             <option value="">Pilih Jenis</option>
                             <template x-for="j in jenisList" :key="j.id">
                                 <option :value="j.nama" x-text="j.nama + ' (' + j.kategori + ')'"></option>
@@ -161,14 +161,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type <span class="text-red-500">*</span></label>
                         <input type="text" name="type" x-model="type" required
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                               class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     </div>
                 </div>
             </template>
 
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg hover:from-cyan-400 hover:to-violet-400 transition text-sm font-medium inline-flex items-center gap-1.5 magnetic-btn">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>

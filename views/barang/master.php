@@ -40,32 +40,32 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
 <div x-data="masterBarang()" class="page-enter">
-    <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
+    <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Master Barang</span>
     </nav>
 
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Master Barang Inventaris</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white gradient-text">Master Barang Inventaris</h2>
         <div class="flex gap-2">
-            <a href="index.php?route=dashboard" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition inline-flex items-center gap-1.5">
+            <a href="index.php?route=dashboard" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm font-medium hover:from-cyan-400 hover:to-violet-400 transition inline-flex items-center gap-1.5 magnetic-btn">
                 <i class="fa-solid fa-plus"></i> Tambah (Dashboard)
             </a>
         </div>
     </div>
 
     <!-- Filter -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
+    <div class="glass-panel p-4 mb-6">
         <form method="GET" action="index.php" class="flex flex-wrap gap-3 items-end">
             <input type="hidden" name="route" value="master_barang">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama, merk, SN, lokasi..." class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition w-48">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama, merk, SN, lokasi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 w-48">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Kategori</label>
-                <select name="kategori" class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <select name="kategori" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <option value="Aset" <?= $filterKategori === 'Aset' ? 'selected' : '' ?>>Aset</option>
                     <option value="Non-Aset" <?= $filterKategori === 'Non-Aset' ? 'selected' : '' ?>>Non-Aset</option>
@@ -73,7 +73,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Status</label>
-                <select name="status" class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <select name="status" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <option value="Tersedia" <?= $filterStatus === 'Tersedia' ? 'selected' : '' ?>>Tersedia</option>
                     <option value="Terpakai" <?= $filterStatus === 'Terpakai' ? 'selected' : '' ?>>Terpakai</option>
@@ -81,7 +81,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <option value="Dalam Perbaikan" <?= $filterStatus === 'Dalam Perbaikan' ? 'selected' : '' ?>>Dalam Perbaikan</option>
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1.5">
+            <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
                 <i class="fa-solid fa-filter"></i> Filter
             </button>
             <?php if ($search || $filterKategori || $filterStatus): ?>
@@ -93,7 +93,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 
     <!-- Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="glass-panel overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-xs uppercase tracking-wider">
@@ -129,7 +129,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <div class="text-xs text-gray-400 dark:text-gray-500"><?= escape($item['merk']) ?> <?= $item['type_sparepart'] ? '- ' . escape($item['type_sparepart']) : '' ?></div>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full <?= $item['kategori'] === 'Aset' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' ?>"><?= escape($item['kategori']) ?></span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full <?= $item['kategori'] === 'Aset' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-400' : 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' ?>"><?= escape($item['kategori']) ?></span>
                         </td>
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300"><?= escape(isset($item['jenis_penggunaan']) ? $item['jenis_penggunaan'] : '-') ?></td>
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs"><?= escape(isset($item['lokasi_penyimpanan']) ? $item['lokasi_penyimpanan'] : '-') ?></td>
@@ -139,7 +139,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300 text-xs"><?= escape(isset($item['pic']) ? $item['pic'] : '-') ?></td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-1">
-                                <button onclick="showDetail(<?= $item['id'] ?>)" class="p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition" title="Detail">
+                                <button onclick="showDetail(<?= $item['id'] ?>)" class="p-1.5 text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg transition" title="Detail">
                                     <i class="fa-solid fa-eye text-xs"></i>
                                 </button>
                                 <button onclick="editItem(<?= $item['id'] ?>)" class="p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition" title="Edit">
@@ -199,7 +199,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         ${logsHtml}
                     </div>
                 `,
-                confirmButtonColor: '#4f46e5',
+                confirmButtonColor: '#00d4ff',
                 confirmButtonText: 'Tutup'
             });
         } else {
@@ -289,7 +289,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </form>
             `,
             confirmButtonText: 'Simpan',
-            confirmButtonColor: '#4f46e5',
+            confirmButtonColor: '#00d4ff',
             showCancelButton: true,
             cancelButtonText: 'Batal',
             preConfirm: async () => {
@@ -336,6 +336,17 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 setTimeout(() => window.location.reload(), 1500);
             }
         });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2"></script>
+<script>
+    function darkSwal(opt) {
+        var isDark = document.documentElement.classList.contains('dark');
+        return Swal.fire(Object.assign({
+            background: isDark ? '#1a1a2e' : '#ffffff',
+            color: isDark ? '#e2e8f0' : '#1e293b',
+            confirmButtonColor: '#00d4ff',
+        }, opt));
     }
 </script>
 

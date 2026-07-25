@@ -1,7 +1,6 @@
 <?php
 
 $page_title = 'Kelola User';
-$require_admin = true;
 require_once __DIR__ . '/../../helpers/auth.php';
 
 $db = getDB();
@@ -23,27 +22,27 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
 <div x-data="users()" class="page-enter">
-    <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Home</a>
+    <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Kelola User</span>
     </nav>
 
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Kelola User</h2>
-        <button @click="openModal('create')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white gradient-text">Kelola User</h2>
+        <button @click="openModal('create')" class="magnetic-btn px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg hover:from-cyan-400 hover:to-violet-400 transition text-sm font-medium inline-flex items-center gap-1.5">
             <i class="fa-solid fa-plus"></i> Tambah User
         </button>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
+    <div class="glass-panel p-4 mb-6">
         <form method="GET" action="index.php" class="flex gap-3 items-end">
             <input type="hidden" name="url" value="users">
             <div class="flex-1">
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari User</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama atau email..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama atau email..." class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition font-medium inline-flex items-center gap-1.5">
+            <button type="submit" class="magnetic-btn px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5">
                 <i class="fa-solid fa-search"></i> Cari
             </button>
             <?php if ($search): ?>
@@ -54,7 +53,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </form>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="glass-panel overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm responsive-table">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
@@ -77,7 +76,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td data-label="Bergabung" class="text-gray-600 dark:text-gray-400"><?= formatTanggal(explode(' ', $u['created_at'])[0]) ?></td>
                         <td data-label="Aksi" class="text-center">
                             <?php if ($u['id'] === $user['id'] || $u['role'] !== 'admin'): ?>
-                            <button @click="openModal('edit', <?= $u['id'] ?>, '<?= escape($u['name']) ?>', '<?= escape($u['email']) ?>', '<?= $u['role'] ?>')" title="Edit user" class="p-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition">
+                            <button @click="openModal('edit', <?= $u['id'] ?>, '<?= escape($u['name']) ?>', '<?= escape($u['email']) ?>', '<?= $u['role'] ?>')" title="Edit user" class="p-1.5 text-xs bg-yellow-500/10 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 rounded-lg hover:bg-yellow-500/20 dark:hover:bg-yellow-500/30 transition">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                             <?php endif; ?>
@@ -86,7 +85,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <?= csrf() ?>
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                <button type="submit" title="Hapus user" class="p-1.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition">
+                                <button type="submit" title="Hapus user" class="p-1.5 text-xs bg-red-500/10 dark:bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-500/20 dark:hover:bg-red-500/30 transition">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
@@ -108,7 +107,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
      x-transition:enter="modal-enter-active" x-transition:enter-start="modal-enter"
      x-transition:leave="modal-leave-active" x-transition:leave-end="modal-leave">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="open = false" x-transition:enter="backdrop-enter-active" x-transition:enter-start="backdrop-enter" x-transition:leave="backdrop-leave-active" x-transition:leave-end="backdrop-leave"></div>
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md relative z-10">
+    <div class="glass-panel rounded-2xl shadow-xl w-full max-w-md relative z-10">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="form.title"></h3>
             <button @click="open = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">&times;</button>
@@ -119,11 +118,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <input type="hidden" name="id" :value="form.id">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama <span class="text-red-500">*</span></label>
-                <input type="text" name="name" x-model="form.name" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="text" name="name" x-model="form.name" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email <span class="text-red-500">*</span></label>
-                <input type="email" name="email" x-model="form.email" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="email" name="email" x-model="form.email" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -131,18 +130,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <span x-show="form.action === 'create'" class="text-red-500">*</span>
                     <span x-show="form.action === 'update'" class="text-gray-400 text-xs">(kosongkan jika tidak diubah)</span>
                 </label>
-                <input type="password" name="password" :required="form.action === 'create'" minlength="6" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <input type="password" name="password" :required="form.action === 'create'" minlength="6" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-                <select name="role" x-model="form.role" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <select name="role" x-model="form.role" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                 </select>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="magnetic-btn px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg hover:from-cyan-400 hover:to-violet-400 transition text-sm font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>

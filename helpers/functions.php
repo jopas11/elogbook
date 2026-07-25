@@ -1,5 +1,18 @@
 <?php
 
+// Polyfill array_column() untuk PHP < 5.5
+if (!function_exists('array_column')) {
+    function array_column(array $input, $columnKey, $indexKey = null) {
+        $result = array();
+        foreach ($input as $row) {
+            if (!isset($row[$columnKey])) continue;
+            $key = ($indexKey !== null && isset($row[$indexKey])) ? $row[$indexKey] : count($result);
+            $result[$key] = $row[$columnKey];
+        }
+        return $result;
+    }
+}
+
 function &_get(&$arr, $key, $default = null) {
     if (is_array($arr) && isset($arr[$key])) {
         return $arr[$key];
@@ -144,10 +157,10 @@ function renderStatusTransition($log) {
     if (!$lama && !$baru) return '<span class="text-gray-400">-</span>';
 
     $colors = array(
-        'Tersedia' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-        'Terpakai' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-        'Rusak' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-        'Dalam Perbaikan' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        'Tersedia' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+        'Terpakai' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+        'Rusak' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+        'Dalam Perbaikan' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
     );
 
     if (!$lama) {
@@ -177,9 +190,9 @@ function renderPagination($currentPage, $totalPages, $queryParams = array(), $cu
     $nextDisabled = $currentPage >= $totalPages ? ' opacity-50 pointer-events-none' : '';
 
     $html = '<div class="flex flex-col sm:flex-row justify-between items-center gap-3 px-4 py-3 border-t border-gray-100 dark:border-gray-700">';
-    $html .= '<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">';
+    $html .= '<div class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400">';
     $html .= '<span>Tampilkan</span>';
-    $html .= '<select onchange="var u=window.location.pathname+window.location.search.replace(/[?&]perPage=\d+/g,\'\').replace(/^\?&/,\'?\');var sep=u.includes(\'?\')?\'&\':\'?\';window.location.href=u+sep+\'perPage=\'+this.value" class="border rounded px-1 py-0.5 text-xs dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">';
+    $html .= '<select onchange="var u=window.location.pathname+window.location.search.replace(/[?&]perPage=\d+/g,\'\').replace(/^\?&/,\'?\');var sep=u.includes(\'?\')?\'&\':\'?\';window.location.href=u+sep+\'perPage=\'+this.value" class="border rounded px-2 py-1 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">';
     foreach (array(10,20,30,50,100) as $v) {
         $sel = $v === $perPage ? ' selected' : '';
         $html .= '<option value="' . $v . '"' . $sel . '>' . $v . '</option>';
@@ -190,12 +203,12 @@ function renderPagination($currentPage, $totalPages, $queryParams = array(), $cu
 
     if ($totalPages > 1) {
         $html .= '<div class="flex items-center justify-center gap-3">';
-        $html .= '<a href="' . $buildUrl($currentPage - 1) . '" class="px-3 py-1 rounded text-sm bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition' . $prevDisabled . '">« Prev</a>';
-        $html .= '<span class="text-gray-500 dark:text-gray-400 text-sm">Halaman</span>';
-        $html .= '<input type="number" min="1" max="' . $totalPages . '" id="pageJump" value="' . $currentPage . '" class="w-14 text-center border rounded px-1 py-0.5 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">';
-        $html .= '<button onclick="jumpPage(document.getElementById(\'pageJump\').value,' . $totalPages . ')" class="px-3 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">Run</button>';
-        $html .= '<a href="' . $buildUrl($currentPage + 1) . '" class="px-3 py-1 rounded text-sm bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition' . $nextDisabled . '">Next »</a>';
-        $html .= '<span class="text-xs text-gray-400">' . $currentPage . ' / ' . $totalPages . '</span>';
+        $html .= '<a href="' . $buildUrl($currentPage - 1) . '" class="px-4 py-2 rounded-lg text-base bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition font-semibold' . $prevDisabled . '">« Prev</a>';
+        $html .= '<span class="text-gray-500 dark:text-gray-400 text-base">Halaman</span>';
+        $html .= '<input type="number" min="1" max="' . $totalPages . '" id="pageJump" value="' . $currentPage . '" class="w-16 text-center border rounded-lg px-2 py-1 text-base dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">';
+        $html .= '<button onclick="jumpPage(document.getElementById(\'pageJump\').value,' . $totalPages . ')" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition text-base font-semibold">Run</button>';
+        $html .= '<a href="' . $buildUrl($currentPage + 1) . '" class="px-4 py-2 rounded-lg text-base bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition font-semibold' . $nextDisabled . '">Next »</a>';
+        $html .= '<span class="text-sm text-gray-400">' . $currentPage . ' / ' . $totalPages . '</span>';
         $html .= '</div>';
     }
 

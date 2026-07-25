@@ -1,17 +1,17 @@
     </div>
 
-    <div x-show="showLogoutModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="showLogoutModal = false" x-transition.opacity>
-        <div @click.stop class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center" x-transition.scale.90>
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20 flex items-center justify-center">
+    <div x-show="showLogoutModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showLogoutModal = false" x-transition.opacity>
+        <div @click.stop class="glass-panel-strong rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center" x-transition.scale.90>
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500/10 to-red-500/5 flex items-center justify-center ring-1 ring-red-500/20">
                 <i class="fa-solid fa-right-from-bracket text-2xl text-red-500"></i>
             </div>
             <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Yakin ingin keluar?</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Anda akan keluar dari sesi saat ini.</p>
             <div class="flex gap-3">
-                <button @click="showLogoutModal = false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <button @click="showLogoutModal = false" class="flex-1 px-4 py-2.5 rounded-xl glass-panel text-gray-700 dark:text-gray-300 font-medium hover:bg-black/5 dark:hover:bg-white/5 transition">
                     Batal
                 </button>
-                <button @click="confirmLogout()" class="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-medium hover:from-red-700 hover:to-red-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-red-500/20">
+                <button @click="confirmLogout()" class="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-medium hover:from-red-700 hover:to-rose-600 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 magnetic-btn">
                     <i class="fa-solid fa-right-from-bracket"></i> Keluar
                 </button>
             </div>
@@ -37,7 +37,7 @@
      x-cloak
      @click="show = false"
      :class="type === 'success' ? 'bg-gradient-to-r from-emerald-600 to-teal-500' : 'bg-gradient-to-r from-red-600 to-rose-500'"
-     class="fixed top-4 right-4 z-50 max-w-sm w-full cursor-pointer toast-enter shadow-xl rounded-2xl overflow-hidden border border-white/10">
+     class="fixed top-4 right-4 z-50 max-w-sm w-full cursor-pointer toast-enter shadow-xl shadow-black/20 rounded-2xl overflow-hidden border border-white/10">
     <div class="flex items-center gap-3 px-5 py-4">
         <div class="shrink-0">
             <i :class="type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation'" class="text-white text-lg"></i>
@@ -63,9 +63,10 @@
      x-cloak
      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
      style="transition: opacity 0.2s ease;">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4 border border-gray-100 dark:border-gray-700">
+    <div class="glass-panel-strong rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
         <div class="relative">
-            <div class="spinner text-indigo-600 dark:text-indigo-400" style="width: 2.5rem; height: 2.5rem; border-width: 3px;"></div>
+            <div class="spinner text-cyan-500 dark:text-cyan-400" style="width: 2.5rem; height: 2.5rem; border-width: 3px;"></div>
+            <div class="absolute inset-0 spinner text-violet-500/30 dark:text-violet-400/30" style="width: 2.5rem; height: 2.5rem; border-width: 3px; animation-duration: 1.2s; animation-direction: reverse;"></div>
         </div>
         <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Memproses...</p>
     </div>

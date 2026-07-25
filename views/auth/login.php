@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
-                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' },
+                        primary: { 50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee', 500: '#00d4ff', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63' },
                     }
                 }
             }
@@ -73,47 +73,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-up { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        @keyframes pulse-soft { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
-        .animate-fade-up { animation: fade-up 0.6s ease-out both; }
-        .animate-fade-in { animation: fade-in 0.4s ease both; }
+        @keyframes aurora-float { 0%, 100% { transform: translate(0, 0) scale(1); } 25% { transform: translate(30px, -20px) scale(1.05); } 50% { transform: translate(-20px, 20px) scale(0.95); } 75% { transform: translate(15px, 10px) scale(1.02); } }
+        @keyframes aurora-float-2 { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-25px, 15px) scale(1.03); } 66% { transform: translate(20px, -25px) scale(0.97); } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+        .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .animate-fade-in { animation: fade-in 0.5s ease both; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.35s; }
         .delay-4 { animation-delay: 0.5s; }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-pulse-soft { animation: pulse-soft 4s ease-in-out infinite; }
+        .aurora-orb { animation: aurora-float 12s ease-in-out infinite; }
+        .aurora-orb-2 { animation: aurora-float-2 15s ease-in-out infinite; }
+        .aurora-orb-3 { animation: aurora-float 18s ease-in-out infinite reverse; }
+        .pulse-glow { animation: pulse-glow 4s ease-in-out infinite; }
+        .aurora-particle { position: absolute; border-radius: 50%; pointer-events: none; opacity: 0; animation: particle-drift linear infinite; }
+        @keyframes particle-drift { 0% { opacity: 0; transform: translateY(0) scale(0); } 10% { opacity: 1; transform: scale(1); } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(-100vh) scale(0.5); } }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 font-sans antialiased transition-colors duration-200"
-      style="background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #c7d2fe 100%);">
+<body class="min-h-screen flex items-center justify-center p-4 font-sans antialiased transition-colors duration-300"
+      style="background: linear-gradient(135deg, #0a0a0f 0%, #12121a 40%, #0f172a 100%);">
+    <!-- Aurora background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-300/30 rounded-full blur-3xl animate-float"></div>
-        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl animate-float" style="animation-delay: -3s;"></div>
-        <div class="absolute top-1/2 left-1/4 w-64 h-64 bg-indigo-200/20 rounded-full blur-3xl animate-pulse-soft"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/15 rounded-full blur-[120px] aurora-orb"></div>
+        <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[140px] aurora-orb-2"></div>
+        <div class="absolute top-1/3 left-1/4 w-72 h-72 bg-emerald-500/8 rounded-full blur-[100px] aurora-orb-3 pulse-glow"></div>
+        <div class="absolute bottom-1/3 right-1/4 w-64 h-64 bg-cyan-500/8 rounded-full blur-[80px] aurora-orb pulse-glow" style="animation-delay: -4s;"></div>
+        <!-- Particles -->
+        <div id="login-particles" class="absolute inset-0"></div>
     </div>
 
     <div class="relative w-full max-w-md animate-fade-up">
-        <div class="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-indigo-500/10 dark:shadow-black/30 p-8 sm:p-10 border border-white/50 dark:border-gray-700/50">
+        <div class="bg-white/10 dark:bg-white/5 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 p-8 sm:p-10 border border-white/10 dark:border-white/5">
             <div class="text-center mb-8 animate-fade-in delay-1">
-                <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-indigo-500/30 ring-4 ring-indigo-100 dark:ring-indigo-900/50">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-cyan-500/20 ring-4 ring-cyan-400/10">
                     <i class="fa-solid fa-boxes-stacked text-white text-2xl"></i>
                 </div>
-                <h1 class="text-2xl font-extrabold text-gray-800 dark:text-white tracking-tight"><?= APP_NAME ?></h1>
-                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1.5">Silakan login untuk melanjutkan</p>
+                <h1 class="text-2xl font-extrabold text-white tracking-tight"><?= APP_NAME ?></h1>
+                <p class="text-gray-400 text-sm mt-1.5">Silakan login untuk melanjutkan</p>
             </div>
 
             <?php if ($error): ?>
-            <div class="bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm border border-red-200/80 dark:border-red-800/50 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-5 flex items-center gap-2.5 animate-fade-in text-sm">
+            <div class="bg-red-500/10 backdrop-blur-sm border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-5 flex items-center gap-2.5 animate-fade-in text-sm">
                 <i class="fa-solid fa-circle-exclamation shrink-0"></i>
                 <span><?= escape($error) ?></span>
             </div>
             <?php endif; ?>
 
             <?php if (hasFlash('success')): ?>
-            <div class="bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-sm border border-emerald-200/80 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl mb-5 flex items-center gap-2.5 animate-fade-in text-sm">
+            <div class="bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl mb-5 flex items-center gap-2.5 animate-fade-in text-sm">
                 <i class="fa-solid fa-circle-check shrink-0"></i>
                 <span><?= escape(flash('success')) ?></span>
             </div>
@@ -122,37 +131,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" class="space-y-5">
                 <?= csrf() ?>
                 <div class="animate-fade-in delay-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Email</label>
                     <div class="relative group">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors duration-200">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors duration-200">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
                         <input type="email" name="email" value="<?= escape($email) ?>" required
-                               class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all duration-200 placeholder:text-gray-400"
+                               class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 placeholder:text-gray-600"
                                placeholder="Masukkan email">
                     </div>
                 </div>
                 <div class="animate-fade-in delay-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
                     <div class="relative group">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors duration-200">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors duration-200">
                             <i class="fa-solid fa-lock"></i>
                         </span>
                         <input type="password" name="password" required
-                               class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 dark:text-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all duration-200 placeholder:text-gray-400"
+                               class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 placeholder:text-gray-600"
                                placeholder="Masukkan password">
                     </div>
                 </div>
-                <button type="submit" class="animate-fade-in delay-3 w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25">
+                <button type="submit" class="animate-fade-in delay-3 w-full py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-violet-400 focus:ring-2 focus:ring-cyan-500/30 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 magnetic-btn">
                     <i class="fa-solid fa-right-to-bracket"></i> Login
                 </button>
             </form>
 
-            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-7 animate-fade-in delay-4">
+            <p class="text-center text-sm text-gray-500 mt-7 animate-fade-in delay-4">
                 Belum punya akun?
-                <a href="<?= pageUrl('register.php') ?>" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">Daftar</a>
+                <a href="<?= pageUrl('register.php') ?>" class="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">Daftar</a>
             </p>
         </div>
     </div>
+
+    <script>
+    (function() {
+        var container = document.getElementById('login-particles');
+        if (!container) return;
+        var colors = ['rgba(0,212,255,0.5)', 'rgba(139,92,246,0.4)', 'rgba(16,185,129,0.3)', 'rgba(0,212,255,0.2)'];
+        for (var i = 0; i < 20; i++) {
+            var p = document.createElement('div');
+            p.className = 'aurora-particle';
+            var size = Math.random() * 4 + 1.5;
+            p.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (Math.random()*100) + '%;bottom:-10px;background:' + colors[Math.floor(Math.random()*colors.length)] + ';animation-duration:' + (Math.random()*12+8) + 's;animation-delay:' + (Math.random()*10) + 's;';
+            container.appendChild(p);
+        }
+    })();
+    </script>
 </body>
 </html>
