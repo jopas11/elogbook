@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="animate-fade-in delay-2">
-                    <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password1</label>
                     <div class="relative group">
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors duration-200">
                             <i class="fa-solid fa-lock"></i>
