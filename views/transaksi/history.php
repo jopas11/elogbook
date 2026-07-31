@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <div x-data="history()" class="page-enter">
     <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">History</span>
     </nav>
@@ -59,18 +59,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <input type="hidden" name="url" value="history">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Jenis, PIC, transaksi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Jenis, PIC, transaksi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Dari Tanggal</label>
-                <input type="date" name="date_from" value="<?= escape(_get($_GET, 'date_from', '')) ?>" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="date" name="date_from" value="<?= escape(_get($_GET, 'date_from', '')) ?>" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Sampai Tanggal</label>
-                <input type="date" name="date_to" value="<?= escape(_get($_GET, 'date_to', '')) ?>" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="date" name="date_to" value="<?= escape(_get($_GET, 'date_to', '')) ?>" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
+                <button type="submit" class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
                     <i class="fa-solid fa-filter"></i> Filter
                 </button>
                 <a href="<?= pageUrl('history.php') ?>" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium inline-flex items-center gap-1.5">

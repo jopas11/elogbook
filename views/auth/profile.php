@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <div x-data="{ showDeleteModal: false }" class="page-enter">
     <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Profile</span>
     </nav>
@@ -23,7 +23,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <div class="glass-panel p-6 card-hover">
         <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-key text-cyan-500"></i>
+            <i class="fa-solid fa-key text-blue-600"></i>
             Ubah Password
         </h3>
             <form method="POST" class="space-y-4">
@@ -31,17 +31,17 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <input type="hidden" name="action" value="update_password">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Saat Ini</label>
-                    <input type="password" name="current_password" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                    <input type="password" name="current_password" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Baru</label>
-                    <input type="password" name="new_password" required minlength="6" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                    <input type="password" name="new_password" required minlength="6" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Konfirmasi Password Baru</label>
-                    <input type="password" name="new_password_confirmation" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                    <input type="password" name="new_password_confirmation" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                 </div>
-                <button type="submit" class="magnetic-btn px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5">
+                <button type="submit" class="magnetic-btn px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition font-medium inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-key"></i> Ubah Password
                 </button>
             </form>

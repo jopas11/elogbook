@@ -25,9 +25,10 @@ $routeMap = [
     'sparepart_keluar' => 'transaksi/keluar.php',
     'history'          => 'transaksi/history.php',
     'ubah_status'      => 'transaksi/ubah_status.php',
+    'approval'         => null,
+    'my_approvals'     => null,
     'audit_logs'       => 'laporan/audit.php',
     'login'            => 'auth/login.php',
-    'register'         => 'auth/register.php',
     'profile'          => 'auth/profile.php',
     'users'            => 'auth/users.php',
 ];
@@ -78,11 +79,13 @@ $controllerMap = [
     'sparepart_keluar' => 'SparepartKeluarController',
     'jenis_sparepart'  => 'JenisSparepartController',
     'ubah_status'      => 'UbahStatusController',
+    'approval'         => 'ApprovalController',
+    'my_approvals'     => 'ApprovalController',
     'users'            => 'UsersController',
     'profile'          => 'ProfileController',
 ];
 
-if (isset($controllerMap[$route]) && ($isPost || $hasAction)) {
+if (isset($controllerMap[$route]) && ($isPost || $hasAction || $route === 'approval' || $route === 'my_approvals')) {
     $class = $controllerMap[$route];
     $file = __DIR__ . '/controllers/' . $class . '.php';
     if (file_exists($file)) {
@@ -103,6 +106,14 @@ if (isset($controllerMap[$route]) && ($isPost || $hasAction)) {
                 $class::{$defaults[$class]}();
                 exit;
             }
+        }
+        if ($route === 'approval' && method_exists($class, 'list')) {
+            $class::list();
+            exit;
+        }
+        if ($route === 'my_approvals' && method_exists($class, 'myApprovals')) {
+            $class::myApprovals();
+            exit;
         }
         // If GET with action but method doesn't exist, fall through to view
         if (!$isPost) {

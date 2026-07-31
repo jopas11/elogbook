@@ -54,6 +54,10 @@
 
 <style>
     @keyframes toast-progress { from { width: 100%; } to { width: 0%; } }
+    .zoom-image-popup .swal2-image { max-width: 80vw; max-height: 70vh; object-fit: contain; }
+    @media (max-width: 640px) {
+        .zoom-image-popup .swal2-image { max-width: 90vw; max-height: 60vh; }
+    }
 </style>
 
 <div x-data="{ loading: false }"
@@ -65,7 +69,7 @@
      style="transition: opacity 0.2s ease;">
     <div class="glass-panel-strong rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
         <div class="relative">
-            <div class="spinner text-cyan-500 dark:text-cyan-400" style="width: 2.5rem; height: 2.5rem; border-width: 3px;"></div>
+            <div class="spinner text-blue-600 dark:text-blue-400" style="width: 2.5rem; height: 2.5rem; border-width: 3px;"></div>
             <div class="absolute inset-0 spinner text-violet-500/30 dark:text-violet-400/30" style="width: 2.5rem; height: 2.5rem; border-width: 3px; animation-duration: 1.2s; animation-direction: reverse;"></div>
         </div>
         <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Memproses...</p>

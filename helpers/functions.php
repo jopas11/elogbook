@@ -236,6 +236,47 @@ function paginate($db, $baseQuery, $params, $perPage = 15) {
     return array($data, $page, $totalPages);
 }
 
+function convertToWebp($tmpPath, $uploadDir, $filename) {
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $webpName = pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+    $destPath = $uploadDir . $webpName;
+
+    if ($ext === 'webp') {
+        if (move_uploaded_file($tmpPath, $destPath)) {
+            return $destPath;
+        }
+        return false;
+    }
+
+    $src = null;
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg':
+            $src = @imagecreatefromjpeg($tmpPath);
+            break;
+        case 'png':
+            $src = @imagecreatefrompng($tmpPath);
+            if ($src) {
+                imagealphablending($src, false);
+                imagesavealpha($src, true);
+            }
+            break;
+    }
+
+    if (!$src) {
+        return false;
+    }
+
+    $result = imagewebp($src, $destPath, 80);
+    imagedestroy($src);
+
+    if (!$result) {
+        return false;
+    }
+
+    return $destPath;
+}
+
 function ftSearch($fulltextCols, $searchTerm, $idCol = null) {
     $searchTerm = trim($searchTerm);
     $cols = implode(', ', $fulltextCols);

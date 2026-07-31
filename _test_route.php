@@ -20,7 +20,6 @@ $routeMap = [
     'ubah_status'      => 'transaksi/ubah_status.php',
     'audit_logs'       => 'laporan/audit.php',
     'login'            => 'auth/login.php',
-    'register'         => 'auth/register.php',
     'profile'          => 'auth/profile.php',
     'users'            => 'auth/users.php',
     'export_csv'       => 'laporan/export_csv.php',

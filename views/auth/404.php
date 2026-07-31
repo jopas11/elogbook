@@ -43,18 +43,18 @@
 </head>
 <body class="bg-[#0a0a0f] h-screen flex items-center justify-center p-4 transition-colors duration-300 overflow-hidden">
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] aurora-orb"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] aurora-orb"></div>
         <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-violet-500/8 rounded-full blur-[140px] aurora-orb" style="animation-delay: -4s;"></div>
     </div>
 
     <div class="text-center max-w-md relative animate-fade-up">
         <div class="text-[10rem] font-extrabold leading-none font-mono" style="background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(139,92,246,0.1)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: float 4s ease-in-out infinite;">404</div>
-        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center mx-auto -mt-16 mb-6 shadow-lg ring-1 ring-white/5 animate-float" style="animation-delay: -1s;">
-            <i class="fa-solid fa-ghost text-cyan-400 text-3xl"></i>
+        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/10 to-violet-500/10 flex items-center justify-center mx-auto -mt-16 mb-6 shadow-lg ring-1 ring-white/5 animate-float" style="animation-delay: -1s;">
+            <i class="fa-solid fa-ghost text-blue-400 text-3xl"></i>
         </div>
         <h1 class="text-2xl font-bold text-white mb-2 animate-fade-up delay-1">Halaman Tidak Ditemukan</h1>
         <p class="text-gray-500 mb-8 animate-fade-up delay-1">Halaman yang Anda cari tidak tersedia atau telah dipindahkan.</p>
-        <a href="<?= pageUrl('dashboard.php') ?>" class="animate-fade-up delay-2 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-xl hover:from-cyan-400 hover:to-violet-400 transition-all font-semibold shadow-lg shadow-cyan-500/20 magnetic-btn">
+        <a href="<?= pageUrl('dashboard.php') ?>" class="animate-fade-up delay-2 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-500/20 magnetic-btn">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
         </a>
     </div>

@@ -190,7 +190,7 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
 
     <div id="sidebar" :class="{'open': mobileOpen}">
     <div class="flex items-center gap-3 px-4 h-16 border-b border-black/5 dark:border-white/5 shrink-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/20 sidebar-icon-wrap">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 sidebar-icon-wrap">
             <i class="fa-solid fa-boxes-stacked text-white text-sm"></i>
         </div>
         <div class="flex-1 min-w-0 sidebar-name">
@@ -206,11 +206,13 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
     $navItems = [
         ['url' => 'dashboard.php', 'label' => 'Dashboard', 'icon' => 'fa-gauge-high'],
         ['url' => 'sparepart_keluar.php', 'label' => 'Sparepart Keluar', 'icon' => 'fa-right-from-bracket'],
+        ['url' => 'my_approvals.php', 'label' => 'Approval Saya', 'icon' => 'fa-clipboard-check'],
         ['url' => 'history.php', 'label' => 'History', 'icon' => 'fa-clock-rotate-left'],
     ];
     $adminItems = [
         ['url' => 'jenis_sparepart.php', 'label' => 'Jenis & Type', 'icon' => 'fa-tags'],
         ['url' => 'ubah_status.php', 'label' => 'Ubah Status', 'icon' => 'fa-arrows-rotate'],
+        ['url' => 'approval.php', 'label' => 'Approval', 'icon' => 'fa-check-double'],
         ['url' => 'users.php', 'label' => 'Kelola User', 'icon' => 'fa-users-gear'],
         ['url' => 'audit_logs.php', 'label' => 'Audit Log', 'icon' => 'fa-clipboard-list'],
     ];
@@ -219,29 +221,54 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
         <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] px-3 menu-label">Menu</p>
     </div>
     <nav class="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
+        <?php
+        $userPendingCount = 0;
+        try {
+            $userPendingStmt = getDB()->prepare("SELECT COUNT(*) FROM status_approvals WHERE status = 'pending' AND user_id = ? AND deleted_at IS NULL");
+            $userPendingStmt->execute(array($user['id']));
+            $userPendingCount = (int)$userPendingStmt->fetchColumn();
+        } catch (Exception $e) { $userPendingCount = 0; }
+        ?>
         <?php foreach ($navItems as $item):
             $active = $currentPage === str_replace('.php', '', $item['url']);
+            $showUserBadge = ($item['url'] === 'my_approvals.php' && $userPendingCount > 0);
         ?>
         <a href="<?= pageUrl($item['url']) ?>" @click="closeNav()"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 <?= $active ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.1)] active-nav' : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200' ?>">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= $active ? 'bg-cyan-500/15' : 'bg-transparent' ?>">
-                <i class="fa-solid <?= $item['icon'] ?> text-center text-sm <?= $active ? 'text-cyan-500 dark:text-cyan-400' : '' ?>"></i>
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 <?= $active ? 'bg-blue-50 text-blue-600 dark:text-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.08)] active-nav' : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200' ?>">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= $active ? 'bg-blue-500/10' : 'bg-transparent' ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-center text-sm <?= $active ? 'text-blue-500 dark:text-blue-400' : '' ?>"></i>
             </div>
             <span><?= $item['label'] ?></span>
+            <?php if ($showUserBadge): ?>
+            <span class="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400"><?= $userPendingCount ?></span>
+            <?php endif; ?>
         </a>
         <?php endforeach; ?>
         <?php if (isAdmin()): ?>
         <hr class="border-black/5 dark:border-white/5 my-2">
         <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] px-3 mb-1 admin-label">Admin</p>
+        <?php
+        $pendingApprovalCount = 0;
+        if (isAdmin()) {
+            try {
+                $pendingStmt = getDB()->query("SELECT COUNT(*) FROM status_approvals WHERE status = 'pending'");
+                $pendingApprovalCount = (int)$pendingStmt->fetchColumn();
+            } catch (Exception $e) { $pendingApprovalCount = 0; }
+        }
+        ?>
         <?php foreach ($adminItems as $item):
             $active = $currentPage === str_replace('.php', '', $item['url']);
+            $showBadge = ($item['url'] === 'approval.php' && $pendingApprovalCount > 0);
         ?>
         <a href="<?= pageUrl($item['url']) ?>" @click="closeNav()"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 <?= $active ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shadow-[0_0_15px_rgba(0,212,255,0.1)] active-nav' : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200' ?>">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= $active ? 'bg-cyan-500/15' : 'bg-transparent' ?>">
-                <i class="fa-solid <?= $item['icon'] ?> text-center text-sm <?= $active ? 'text-cyan-500 dark:text-cyan-400' : '' ?>"></i>
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 <?= $active ? 'bg-blue-50 text-blue-600 dark:text-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.08)] active-nav' : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200' ?>">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= $active ? 'bg-blue-500/10' : 'bg-transparent' ?>">
+                <i class="fa-solid <?= $item['icon'] ?> text-center text-sm <?= $active ? 'text-blue-500 dark:text-blue-400' : '' ?>"></i>
             </div>
             <span><?= $item['label'] ?></span>
+            <?php if ($showBadge): ?>
+            <span class="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 admin-label"><?= $pendingApprovalCount ?></span>
+            <?php endif; ?>
         </a>
         <?php endforeach; ?>
         <?php endif; ?>
@@ -257,7 +284,7 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
         </button>
 
         <div class="flex items-center gap-3 px-3 py-2 rounded-xl bg-black/3 dark:bg-white/3 bottom-section bottom-user">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg shadow-cyan-500/20">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg shadow-blue-500/20">
                 <?= strtoupper(substr($user['name'], 0, 1)) ?>
             </div>
             <div class="bottom-label min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -286,7 +313,7 @@ $currentPage = _get($_GET, 'route', _get($_GET, 'url', str_replace('.php', '', b
         <button @click="toggleSidebar()" class="lg:hidden p-2 -ml-1 rounded-lg text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 transition">
             <i class="fa-solid fa-bars text-lg"></i>
         </button>
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shadow-md shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md shrink-0">
             <i class="fa-solid fa-boxes-stacked text-white text-sm"></i>
         </div>
         <h1 class="font-bold text-sm text-gray-800 dark:text-white"><?= APP_NAME ?></h1>

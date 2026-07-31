@@ -96,10 +96,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       style="background: linear-gradient(135deg, #0a0a0f 0%, #12121a 40%, #0f172a 100%);">
     <!-- Aurora background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/15 rounded-full blur-[120px] aurora-orb"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[120px] aurora-orb"></div>
         <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[140px] aurora-orb-2"></div>
         <div class="absolute top-1/3 left-1/4 w-72 h-72 bg-emerald-500/8 rounded-full blur-[100px] aurora-orb-3 pulse-glow"></div>
-        <div class="absolute bottom-1/3 right-1/4 w-64 h-64 bg-cyan-500/8 rounded-full blur-[80px] aurora-orb pulse-glow" style="animation-delay: -4s;"></div>
+        <div class="absolute bottom-1/3 right-1/4 w-64 h-64 bg-blue-500/8 rounded-full blur-[80px] aurora-orb pulse-glow" style="animation-delay: -4s;"></div>
         <!-- Particles -->
         <div id="login-particles" class="absolute inset-0"></div>
     </div>
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="relative w-full max-w-md animate-fade-up">
         <div class="bg-white/10 dark:bg-white/5 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 p-8 sm:p-10 border border-white/10 dark:border-white/5">
             <div class="text-center mb-8 animate-fade-in delay-1">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-cyan-500/20 ring-4 ring-cyan-400/10">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br bg-blue-600 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-500/20 ring-4 ring-blue-400/10">
                     <i class="fa-solid fa-boxes-stacked text-white text-2xl"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold text-white tracking-tight"><?= APP_NAME ?></h1>
@@ -133,34 +133,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="animate-fade-in delay-2">
                     <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Email</label>
                     <div class="relative group">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors duration-200">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors duration-200">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
                         <input type="email" name="email" value="<?= escape($email) ?>" required
-                               class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 placeholder:text-gray-600"
+                               class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 placeholder:text-gray-600"
                                placeholder="Masukkan email">
                     </div>
                 </div>
                 <div class="animate-fade-in delay-2">
-                    <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password1</label>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
                     <div class="relative group">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors duration-200">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors duration-200">
                             <i class="fa-solid fa-lock"></i>
                         </span>
                         <input type="password" name="password" required
-                               class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 placeholder:text-gray-600"
+                               class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 placeholder:text-gray-600"
                                placeholder="Masukkan password">
                     </div>
                 </div>
-                <button type="submit" class="animate-fade-in delay-3 w-full py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-violet-400 focus:ring-2 focus:ring-cyan-500/30 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 magnetic-btn">
+                <button type="submit" class="animate-fade-in delay-3 w-full py-3 bg-gradient-to-r bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 magnetic-btn">
                     <i class="fa-solid fa-right-to-bracket"></i> Login
                 </button>
             </form>
 
-            <p class="text-center text-sm text-gray-500 mt-7 animate-fade-in delay-4">
-                Belum punya akun?
-                <a href="<?= pageUrl('register.php') ?>" class="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">Daftar</a>
-            </p>
+
         </div>
     </div>
 

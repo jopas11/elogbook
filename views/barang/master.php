@@ -41,7 +41,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <div x-data="masterBarang()" class="page-enter">
     <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-blue-600 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Master Barang</span>
     </nav>
@@ -49,7 +49,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white gradient-text">Master Barang Inventaris</h2>
         <div class="flex gap-2">
-            <a href="index.php?route=dashboard" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm font-medium hover:from-cyan-400 hover:to-violet-400 transition inline-flex items-center gap-1.5 magnetic-btn">
+            <a href="index.php?route=dashboard" class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition inline-flex items-center gap-1.5 magnetic-btn">
                 <i class="fa-solid fa-plus"></i> Tambah (Dashboard)
             </a>
         </div>
@@ -61,11 +61,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <input type="hidden" name="route" value="master_barang">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama, merk, SN, lokasi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200 w-48">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama, merk, SN, lokasi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 w-48">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Kategori</label>
-                <select name="kategori" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <select name="kategori" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <option value="Aset" <?= $filterKategori === 'Aset' ? 'selected' : '' ?>>Aset</option>
                     <option value="Non-Aset" <?= $filterKategori === 'Non-Aset' ? 'selected' : '' ?>>Non-Aset</option>
@@ -73,7 +73,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Status</label>
-                <select name="status" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <select name="status" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                     <option value="">Semua</option>
                     <option value="Tersedia" <?= $filterStatus === 'Tersedia' ? 'selected' : '' ?>>Tersedia</option>
                     <option value="Terpakai" <?= $filterStatus === 'Terpakai' ? 'selected' : '' ?>>Terpakai</option>
@@ -81,7 +81,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <option value="Dalam Perbaikan" <?= $filterStatus === 'Dalam Perbaikan' ? 'selected' : '' ?>>Dalam Perbaikan</option>
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
+            <button type="submit" class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
                 <i class="fa-solid fa-filter"></i> Filter
             </button>
             <?php if ($search || $filterKategori || $filterStatus): ?>
@@ -123,13 +123,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <?php foreach ($items as $item): ?>
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                         <td class="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">#<?= $item['id'] ?></td>
-                        <td class="px-4 py-3 font-mono text-xs max-w-[120px] truncate" title="<?= escape($item['serial_number']) ?>"><?= escape($item['serial_number'] ?: '-') ?></td>
+                        <td class="px-4 py-3 text-xs max-w-[120px] truncate" title="<?= $item['kategori'] === 'Non-Aset' ? $item['quantity'] : escape(preg_replace('/^SN-/', '', $item['serial_number'])) ?>"><?= $item['kategori'] === 'Non-Aset' ? '<span class="font-semibold">QTY: ' . $item['quantity'] . '</span>' : '<span class="font-mono">' . escape(preg_replace('/^SN-/', '', $item['serial_number']) ?: '-') . '</span>' ?></td>
                         <td class="px-4 py-3">
                             <div class="font-medium text-gray-800 dark:text-gray-200"><?= escape($item['jenis_sparepart']) ?></div>
                             <div class="text-xs text-gray-400 dark:text-gray-500"><?= escape($item['merk']) ?> <?= $item['type_sparepart'] ? '- ' . escape($item['type_sparepart']) : '' ?></div>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full <?= $item['kategori'] === 'Aset' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-400' : 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' ?>"><?= escape($item['kategori']) ?></span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full <?= $item['kategori'] === 'Aset' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' ?>"><?= escape($item['kategori']) ?></span>
                         </td>
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300"><?= escape(isset($item['jenis_penggunaan']) ? $item['jenis_penggunaan'] : '-') ?></td>
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs"><?= escape(isset($item['lokasi_penyimpanan']) ? $item['lokasi_penyimpanan'] : '-') ?></td>
@@ -139,7 +139,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300 text-xs"><?= escape(isset($item['pic']) ? $item['pic'] : '-') ?></td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-1">
-                                <button onclick="showDetail(<?= $item['id'] ?>)" class="p-1.5 text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg transition" title="Detail">
+                                <button onclick="showDetail(<?= $item['id'] ?>)" class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Detail">
                                     <i class="fa-solid fa-eye text-xs"></i>
                                 </button>
                                 <button onclick="editItem(<?= $item['id'] ?>)" class="p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition" title="Edit">
@@ -184,7 +184,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <p><strong>Jenis:</strong> ${escapeHtml(data.data.jenis_sparepart)}</p>
                         <p><strong>Type:</strong> ${escapeHtml(data.data.type_sparepart || '-')}</p>
                         <p><strong>Merk:</strong> ${escapeHtml(data.data.merk || '-')}</p>
-                        <p><strong>Serial Number:</strong> ${escapeHtml(data.data.serial_number || '-')}</p>
+                        <p><strong>${(data.data.kategori === 'Non-Aset') ? 'QTY' : 'Serial Number'}:</strong> ${(data.data.kategori === 'Non-Aset') ? (data.data.quantity || 0) : (data.data.serial_number || '-')}</p>
                         <p><strong>Kategori:</strong> ${escapeHtml(data.data.kategori)}</p>
                         <p><strong>Jenis Penggunaan:</strong> ${escapeHtml(data.data.jenis_penggunaan || '-')}</p>
                         <p><strong>Lokasi Penyimpanan:</strong> ${escapeHtml(data.data.lokasi_penyimpanan || '-')}</p>

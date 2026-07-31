@@ -95,3 +95,39 @@ CREATE TABLE IF NOT EXISTS peminjaman (
     FOREIGN KEY (sparepart_id) REFERENCES spareparts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS sparepart_merks (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    kategori ENUM('Aset','Non-Aset') NOT NULL,
+    jenis_sparepart VARCHAR(255) NOT NULL,
+    type_sparepart VARCHAR(255) DEFAULT NULL,
+    merk VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_merk (kategori, jenis_sparepart, type_sparepart, merk)
+);
+
+CREATE TABLE IF NOT EXISTS status_approvals (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sparepart_id BIGINT UNSIGNED DEFAULT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    tipe_transaksi VARCHAR(50) NOT NULL,
+    kategori VARCHAR(50) DEFAULT NULL,
+    type_sparepart VARCHAR(255) DEFAULT NULL,
+    status_lama VARCHAR(50) DEFAULT NULL,
+    status_baru VARCHAR(50) DEFAULT NULL,
+    quantity INT UNSIGNED DEFAULT NULL,
+    pic VARCHAR(255) DEFAULT NULL,
+    department VARCHAR(255) DEFAULT NULL,
+    tanggal DATE DEFAULT NULL,
+    keterangan TEXT DEFAULT NULL,
+    image VARCHAR(255) DEFAULT NULL,
+    status ENUM('pending','approved','rejected') DEFAULT 'pending',
+    approved_by BIGINT UNSIGNED DEFAULT NULL,
+    approved_at TIMESTAMP NULL DEFAULT NULL,
+    rejected_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (sparepart_id) REFERENCES spareparts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+);

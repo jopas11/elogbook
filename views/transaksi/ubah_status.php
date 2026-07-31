@@ -28,7 +28,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <div x-data="ubahStatus()" class="page-enter">
     <nav class="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400 mb-4">
-        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</a>
+        <a href="<?= pageUrl('dashboard.php') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Home</a>
         <i class="fa-solid fa-chevron-right text-xs"></i>
         <span class="text-gray-700 dark:text-gray-200 font-medium">Ubah Status</span>
     </nav>
@@ -42,11 +42,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <input type="hidden" name="url" value="ubah_status">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari Sparepart</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="ID, jenis, merk..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="ID, jenis, merk..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Filter Status</label>
-                <select name="status" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <select name="status" class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                     <option value="">Semua Status</option>
                     <option value="Tersedia" <?= $filterStatus === 'Tersedia' ? 'selected' : '' ?>>Tersedia</option>
                     <option value="Terpakai" <?= $filterStatus === 'Terpakai' ? 'selected' : '' ?>>Terpakai</option>
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <option value="Dalam Perbaikan" <?= $filterStatus === 'Dalam Perbaikan' ? 'selected' : '' ?>>Dalam Perbaikan</option>
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm hover:from-cyan-400 hover:to-violet-400 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
+            <button type="submit" class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition font-medium inline-flex items-center gap-1.5 magnetic-btn">
                 <i class="fa-solid fa-filter"></i> Filter
             </button>
             <?php if ($search || $filterStatus): ?>
@@ -84,7 +84,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td data-label="ID" class="font-medium text-gray-800 dark:text-gray-200">#<?= $sp['id'] ?></td>
                         <td data-label="Jenis" class="text-gray-700 dark:text-gray-300"><?= escape($sp['jenis_sparepart']) ?></td>
                         <td data-label="Merk" class="text-gray-600 dark:text-gray-400"><?= escape(isset($sp['merk']) ? $sp['merk'] : '-') ?></td>
-                        <td data-label="SN" class="text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape(isset($sp['serial_number']) ? $sp['serial_number'] : '-') ?></td>
+                        <td data-label="SN" class="text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape(isset($sp['serial_number']) ? preg_replace('/^SN-/', '', $sp['serial_number']) : '-') ?></td>
                         <td data-label="Status"><?= getStatusBadge($sp['status']) ?></td>
                         <td data-label="Aksi" class="text-center">
                             <button @click="openUbah(<?= $sp['id'] ?>, '<?= escape($sp['jenis_sparepart']) ?>', '<?= escape($sp['status']) ?>')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition font-medium inline-flex items-center gap-1">
@@ -132,7 +132,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status Baru <span class="text-red-500">*</span></label>
-                <select name="status_baru" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <select name="status_baru" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
                     <option value="Tersedia">Tersedia</option>
                     <option value="Terpakai">Terpakai</option>
                     <option value="Rusak">Rusak</option>
@@ -141,23 +141,23 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal <span class="text-red-500">*</span></label>
-                <input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" required class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PIC</label>
-                <input type="text" name="pic" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="text" name="pic" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-                <input type="text" name="department" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200">
+                <input type="text" name="department" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan</label>
-                <textarea name="keterangan" rows="2" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 outline-none transition-all duration-200"></textarea>
+                <textarea name="keterangan" rows="2" class="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200"></textarea>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm font-medium">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg hover:from-cyan-400 hover:to-violet-400 transition text-sm font-medium inline-flex items-center gap-1.5 magnetic-btn">
+                <button type="submit" class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium inline-flex items-center gap-1.5 magnetic-btn">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>

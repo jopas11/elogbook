@@ -39,6 +39,18 @@ class UbahStatusController {
 
         $statusLama = $sparepart['status'];
 
+        if ($statusLama === $statusBaru) {
+            flash('error', 'Status baru sama dengan status lama.');
+            redirect('ubah_status.php');
+        }
+
+        $checkPending = $db->prepare("SELECT id FROM status_approvals WHERE sparepart_id = ? AND status = 'pending' AND deleted_at IS NULL LIMIT 1");
+        $checkPending->execute(array($sparepartId));
+        if ($checkPending->fetch()) {
+            flash('error', 'Barang ini sedang dalam proses approval. Tidak dapat mengubah status sampai disetujui/ditolak.');
+            redirect('ubah_status.php');
+        }
+
         $db->prepare("UPDATE spareparts SET status = ?, pic = ?, department = ?, keterangan = ? WHERE id = ?")->execute(array($statusBaru, $pic, $department, $keterangan, $sparepartId));
 
         $tipeTransaksi = $statusBaru === 'Dalam Perbaikan' ? 'Dalam Perbaikan' : 'Ubah Status';

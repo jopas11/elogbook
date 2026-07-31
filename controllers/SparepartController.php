@@ -79,12 +79,7 @@ class SparepartController {
             $params = array($kategori, $jenis, $type);
         }
 
-        // Non-admin: hanya lihat item sendiri (PIC atau punya riwayat)
-        if (!$isAdmin) {
-            $where .= " AND (pic = ? OR id IN (SELECT sparepart_id FROM logbooks WHERE user_id = ? AND deleted_at IS NULL))";
-            $params[] = $user['name'];
-            $params[] = $user['id'];
-        }
+        // Semua user bisa lihat semua item dalam grup
 
         if ($search) {
             $where .= " AND (serial_number LIKE ? OR merk LIKE ?)";
@@ -194,13 +189,13 @@ class SparepartController {
 
             if (isAdmin()) {
                 $dipakai = $db->query("
-                    SELECT id, jenis_sparepart, type_sparepart, merk, serial_number, kategori, status, pic, department, tanggal, keterangan, image, updated_at
+                    SELECT id, jenis_sparepart, type_sparepart, merk, serial_number, kategori, status, pic, department, tanggal, keterangan, image, quantity, updated_at
                     FROM spareparts WHERE deleted_at IS NULL AND status = 'Terpakai' AND updated_at >= NOW() - INTERVAL 24 HOUR
                     ORDER BY updated_at DESC LIMIT 20
                 ")->fetchAll();
             } else {
                 $stmt = $db->prepare("
-                    SELECT id, jenis_sparepart, type_sparepart, merk, serial_number, kategori, status, pic, department, tanggal, keterangan, image, updated_at
+                    SELECT id, jenis_sparepart, type_sparepart, merk, serial_number, kategori, status, pic, department, tanggal, keterangan, image, quantity, updated_at
                     FROM spareparts WHERE deleted_at IS NULL AND status = 'Terpakai' AND pic = ? AND updated_at >= NOW() - INTERVAL 24 HOUR
                     ORDER BY updated_at DESC LIMIT 20
                 ");
@@ -265,9 +260,26 @@ class SparepartController {
             $uploadDir = __DIR__ . '/../public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/';
             if (!is_dir($uploadDir)) { mkdir($uploadDir, 0755, true); }
             $filename = time() . '_' . bin2hex(openssl_random_pseudo_bytes(4)) . '.' . $ext;
-            if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
-                $imagePath = 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $filename;
+            $convertedPath = convertToWebp($file['tmp_name'], $uploadDir, $filename);
+            if ($convertedPath) {
+                $webpName = pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+                $imagePath = 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $webpName;
+            } else {
+                flash('error', 'Gagal upload foto. Periksa izin folder uploads.');
+                redirect('dashboard.php');
             }
+        } elseif (!empty($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            $uploadErrors = array(
+                UPLOAD_ERR_INI_SIZE => 'Ukuran foto melebihi batas server.',
+                UPLOAD_ERR_FORM_SIZE => 'Ukuran foto melebihi batas form.',
+                UPLOAD_ERR_PARTIAL => 'Foto hanya terupload sebagian.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Folder temporary server tidak ditemukan.',
+                UPLOAD_ERR_CANT_WRITE => 'Gagal menulis file ke disk.',
+            );
+            $errCode = $_FILES['image']['error'];
+            $errMsg = isset($uploadErrors[$errCode]) ? $uploadErrors[$errCode] : 'Error upload tidak dikenal (kode: ' . $errCode . ').';
+            flash('error', $errMsg);
+            redirect('dashboard.php');
         }
 
         if ($kategori === 'Aset') {
@@ -329,8 +341,8 @@ class SparepartController {
             $stmt = $db->prepare("UPDATE spareparts SET kategori=?, jenis_penggunaan=?, lokasi_penyimpanan=?, jenis_sparepart=?, type_sparepart=?, serial_number=?, quantity=?, minimum_stok=?, merk=?, pic=?, department=?, status=?, keterangan=? WHERE id=? AND deleted_at IS NULL");
             $stmt->execute(array(
                 _get($_POST, 'kategori', 'Aset'),
-                _get($_POST, 'jenis_penggunaan', ''),
-                trim(_get($_POST, 'lokasi_penyimpanan', '')),
+                _get($_POST, 'jenis_penggunaan', '') ?: null,
+                trim(_get($_POST, 'lokasi_penyimpanan', '')) ?: null,
                 trim(_get($_POST, 'jenis_sparepart', '')),
                 trim(_get($_POST, 'type_sparepart', '')),
                 trim(_get($_POST, 'serial_number', '')),
