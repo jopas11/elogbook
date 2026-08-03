@@ -8,6 +8,9 @@ if (isset($_SESSION['user'])) {
     redirect('dashboard.php');
 }
 
+// Bersihkan flash dari auth guard agar tidak bocor ke halaman berikutnya
+unset($_SESSION['flash']);
+
 $error = '';
 $email = '';
 
