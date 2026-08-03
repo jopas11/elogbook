@@ -86,16 +86,33 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             Cari Sparepart <span class="text-red-500">*</span>
                         </label>
                         <div class="flex gap-2 relative">
-                            <div class="flex flex-1">
+                            <div class="flex flex-1 min-w-0">
                                 <span class="inline-flex items-center px-3 py-2.5 border border-r-0 border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-l-xl text-base font-mono select-none">SN-</span>
                                 <input type="text" x-model="snAset" @input="cariBySn" @focus="showSuggestions = false; setTimeout(() => _fetchSuggestions(), 100)"
-                                       class="flex-1 px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-r-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 font-mono"
+                                       id="keluar-sn-input"
+                                       class="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-r-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 font-mono"
                                        placeholder="Masukkan serial number" autocomplete="off">
                             </div>
                             <button type="button" @click="cariBySn" :disabled="!snAset.trim()"
-                                    class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50 inline-flex items-center gap-1.5 magnetic-btn">
+                                    class="px-4 py-2 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50 inline-flex items-center gap-1.5 magnetic-btn shrink-0">
                                 <i class="fa-solid fa-search"></i> Cari
                             </button>
+                            <div class="relative shrink-0" @click.outside="openScanDrop = false">
+                                <button type="button" @click="openScanDrop = !openScanDrop"
+                                        class="px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-600 transition inline-flex items-center gap-1.5" title="Scan barcode/QR">
+                                    <i class="fa-solid fa-barcode"></i> Scan <i class="fa-solid fa-caret-down text-[10px] ml-0.5"></i>
+                                </button>
+                                <div x-show="openScanDrop" x-cloak x-transition
+                                     class="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 min-w-[180px] overflow-hidden">
+                                    <button type="button" @click="openScanDrop = false; openKeluarScanner()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-2.5 transition">
+                                        <i class="fa-solid fa-camera text-emerald-500"></i> Kamera
+                                    </button>
+                                    <button type="button" @click="openScanDrop = false; document.getElementById('keluar-sn-photo').click()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-2.5 transition">
+                                        <i class="fa-solid fa-image text-blue-500"></i> Upload Foto
+                                    </button>
+                                </div>
+                                <input type="file" id="keluar-sn-photo" accept="image/*" class="hidden" onchange="scanKeluarFromPhoto(this)">
+                            </div>
 
                             <!-- Suggestions dropdown -->
                             <div x-show="showSuggestions" x-cloak
@@ -389,10 +406,27 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 </div>
 
+<!-- Scanner Overlay -->
+<div id="keluar-scanner-overlay" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <h4 class="font-bold text-gray-800 dark:text-white text-sm"><i class="fa-solid fa-barcode text-emerald-500 mr-1.5"></i>Scan Barcode / QR</h4>
+            <button onclick="closeKeluarScanner()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-3">
+            <div id="keluar-reader" class="rounded-xl overflow-hidden"></div>
+        </div>
+        <div class="px-4 pb-4">
+            <p class="text-xs text-gray-400 dark:text-gray-500 text-center">Arahkan kamera ke barcode/QR pada barang</p>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('sparepartKeluarForm', () => ({
             tab: 'aset',
+            openScanDrop: false,
             // Aset fields
             snAset: '',
             snFound: false,
@@ -579,6 +613,74 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             }
         }));
     });
+
+    /* ===== Keluar Scanner ===== */
+    var keluarHtml5Qr = null;
+    var keluarScannerRunning = false;
+
+    function setKeluarSnAndSearch(clean) {
+        var input = document.getElementById('keluar-sn-input');
+        input.value = clean;
+        try {
+            var component = Alpine.$data(input);
+            if (component && component.snAset !== undefined) {
+                component.snAset = clean;
+                component._cariBySn();
+                return;
+            }
+        } catch (e) {}
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function openKeluarScanner() {
+        var overlay = document.getElementById('keluar-scanner-overlay');
+        overlay.style.display = '';
+        if (!keluarHtml5Qr) {
+            keluarHtml5Qr = new Html5Qrcode('keluar-reader');
+        }
+        keluarHtml5Qr.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.5 },
+            function onScanSuccess(decodedText) {
+                closeKeluarScanner();
+                var clean = decodedText.replace(/^SN-/i, '').trim();
+                setKeluarSnAndSearch(clean);
+            },
+            function onScanFailure() {}
+        ).then(function() {
+            keluarScannerRunning = true;
+        }).catch(function(err) {
+            closeKeluarScanner();
+            alert('Gagal akses kamera: ' + err);
+        });
+    }
+
+    function closeKeluarScanner() {
+        var overlay = document.getElementById('keluar-scanner-overlay');
+        overlay.style.display = 'none';
+        if (keluarHtml5Qr && keluarScannerRunning) {
+            keluarHtml5Qr.stop().then(function() {
+                keluarScannerRunning = false;
+            }).catch(function() {});
+        }
+    }
+
+    function scanKeluarFromPhoto(input) {
+        if (!input.files || !input.files[0]) return;
+        var file = input.files[0];
+        if (!keluarHtml5Qr) {
+            keluarHtml5Qr = new Html5Qrcode('keluar-reader');
+        }
+        keluarHtml5Qr.scanFileV2(file, true)
+            .then(function(decodedText) {
+                var clean = decodedText.replace(/^SN-/i, '').trim();
+                setKeluarSnAndSearch(clean);
+            })
+            .catch(function() {
+                alert('Tidak ditemukan barcode/QR di foto. Pastikan foto jelas dan fokus.');
+            });
+        input.value = '';
+    }
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

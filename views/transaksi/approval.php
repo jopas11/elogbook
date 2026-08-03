@@ -26,6 +26,21 @@
         </a>
     </div>
 
+    <!-- Search -->
+    <form method="GET" class="mb-4">
+        <input type="hidden" name="route" value="approval">
+        <input type="hidden" name="status" value="<?= escape($status) ?>">
+        <div class="flex gap-2">
+            <input type="text" name="search" value="<?= escape($search ?? '') ?>" placeholder="Cari jenis, merk, SN, PIC..."
+                   class="flex-1 max-w-sm px-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200">
+            <?php if (!empty($search)): ?>
+            <a href="?route=approval&status=<?= escape($status) ?>" class="px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition inline-flex items-center gap-1">
+                <i class="fa-solid fa-xmark"></i> Reset
+            </a>
+            <?php endif; ?>
+        </div>
+    </form>
+
     <!-- Table -->
     <div class="glass-panel overflow-hidden">
         <div class="overflow-x-auto">

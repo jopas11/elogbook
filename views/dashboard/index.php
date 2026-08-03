@@ -487,11 +487,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <?php if ($snCount <= 3): ?>
                                     <div class="font-mono leading-relaxed">
                                     <?php foreach ($snItems as $sn): ?>
-                                        <span class="block truncate" title="<?= escape($sn) ?>"><?= escape($sn) ?></span>
+                                        <?php $snClean = preg_replace('/^SN-/i', '', $sn); ?>
+                                        <span class="block truncate" title="<?= escape($snClean) ?>"><?= escape($snClean) ?></span>
                                     <?php endforeach; ?>
                                     </div>
                                 <?php else: ?>
-                                    <span class="font-mono block" title="<?= escape($snList) ?>"><?= escape($snItems[0]) ?></span>
+                                    <?php $snFirstClean = preg_replace('/^SN-/i', '', $snItems[0]); ?>
+                                    <span class="font-mono block" title="<?= escape($snFirstClean) ?>"><?= escape($snFirstClean) ?></span>
                                     <span class="text-gray-400 dark:text-gray-500">+<?= $snCount - 1 ?> lainnya</span>
                                 <?php endif; ?>
                             <?php else: ?>
@@ -678,11 +680,28 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Quantity <span class="text-red-500">*</span></label>
                     <input type="number" name="quantity" id="input-qty" value="1" min="1" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
-                <div id="add-serial-wrap">
+                <div id="add-serial-wrap" class="col-span-1 sm:col-span-2">
                     <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Serial Number <span class="text-red-500">*</span></label>
-                    <div class="flex">
-                        <span class="inline-flex items-center px-3 py-2.5 border border-r-0 border-gray-300 dark:border-gray-600 dark:bg-gray-600 bg-gray-100 text-gray-600 dark:text-gray-300 rounded-l-lg text-base font-mono select-none">SN</span>
-                        <input type="text" name="serial_number" required class="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-r-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition font-mono" value="<?= escape(old('serial_number')) ?>" placeholder="Pisahkan dengan koma jika lebih dari 1">
+                    <div class="flex items-center gap-2">
+                        <div class="flex flex-1 min-w-0">
+                            <span class="inline-flex items-center px-3 py-2.5 border border-r-0 border-gray-300 dark:border-gray-600 dark:bg-gray-600 bg-gray-100 text-gray-600 dark:text-gray-300 rounded-l-lg text-base font-mono select-none">SN</span>
+                            <input type="text" name="serial_number" id="add-sn-input" required class="flex-1 min-w-0 px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-r-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition font-mono" value="<?= escape(old('serial_number')) ?>" placeholder="Pisahkan dengan koma jika lebih dari 1">
+                        </div>
+                        <div class="relative shrink-0" x-data="{ openScanDrop: false }" @click.outside="openScanDrop = false">
+                            <button type="button" @click="openScanDrop = !openScanDrop" class="px-3 py-2.5 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-600 transition inline-flex items-center gap-1.5" title="Scan barcode/QR">
+                                <i class="fa-solid fa-barcode"></i> Scan <i class="fa-solid fa-caret-down text-[10px] ml-0.5"></i>
+                            </button>
+                            <div x-show="openScanDrop" x-cloak x-transition
+                                 class="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 min-w-[180px] overflow-hidden">
+                                <button type="button" @click="openScanDrop = false; openSnScanner()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-2.5 transition">
+                                    <i class="fa-solid fa-camera text-emerald-500"></i> Kamera
+                                </button>
+                                <button type="button" @click="openScanDrop = false; document.getElementById('add-sn-photo').click()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-2.5 transition">
+                                    <i class="fa-solid fa-image text-blue-500"></i> Upload Foto
+                                </button>
+                            </div>
+                            <input type="file" id="add-sn-photo" accept="image/*" class="hidden" onchange="scanSnFromPhoto(this)">
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -742,6 +761,22 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Scanner Overlay -->
+<div id="sn-scanner-overlay" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <h4 class="font-bold text-gray-800 dark:text-white text-sm"><i class="fa-solid fa-barcode text-emerald-500 mr-1.5"></i>Scan Barcode / QR</h4>
+            <button onclick="closeSnScanner()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-3">
+            <div id="sn-reader" class="rounded-xl overflow-hidden"></div>
+        </div>
+        <div class="px-4 pb-4">
+            <p class="text-xs text-gray-400 dark:text-gray-500 text-center">Arahkan kamera ke barcode/QR pada barang</p>
+        </div>
     </div>
 </div>
 
@@ -1522,6 +1557,104 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     });
             }
         });
+    }
+
+    /* ===== SN Scanner ===== */
+    var snHtml5Qr = null;
+    var snScannerRunning = false;
+
+    function validateSnAfterScan(clean) {
+        var snInput = document.getElementById('add-sn-input');
+        var existing = snInput.value.trim();
+        if (existing.indexOf(clean) !== -1) {
+            darkSwal({ icon: 'warning', title: 'SN Duplikat', text: 'SN ' + clean + ' sudah ada di input.', confirmButtonColor: '#00d4ff' });
+            return;
+        }
+        fetch('index.php?route=sparepart&action=showBySn&sn=' + encodeURIComponent(clean))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success && data.data) {
+                    var d = data.data;
+                    darkSwal({
+                        icon: 'warning',
+                        title: 'SN Sudah Terdaftar',
+                        html: '<div class="text-left text-sm"><p class="mb-2">SN <strong>' + clean + '</strong> sudah digunakan:</p>'
+                            + '<div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 space-y-1 text-left">'
+                            + '<p><strong>Jenis:</strong> ' + (d.jenis_sparepart || '-') + '</p>'
+                            + '<p><strong>Type:</strong> ' + (d.type_sparepart || '-') + '</p>'
+                            + '<p><strong>Merk:</strong> ' + (d.merk || '-') + '</p>'
+                            + '<p><strong>Status:</strong> ' + (d.status || '-') + '</p>'
+                            + '</div></div>',
+                        confirmButtonColor: '#00d4ff',
+                        confirmButtonText: 'Tutup'
+                    });
+                } else {
+                    if (existing !== '') {
+                        snInput.value = existing + ', ' + clean;
+                    } else {
+                        snInput.value = clean;
+                    }
+                    snInput.focus();
+                }
+            })
+            .catch(function() {
+                if (existing !== '') {
+                    snInput.value = existing + ', ' + clean;
+                } else {
+                    snInput.value = clean;
+                }
+                snInput.focus();
+            });
+    }
+
+    function openSnScanner() {
+        var overlay = document.getElementById('sn-scanner-overlay');
+        overlay.style.display = '';
+        if (!snHtml5Qr) {
+            snHtml5Qr = new Html5Qrcode('sn-reader');
+        }
+        snHtml5Qr.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.5 },
+            function onScanSuccess(decodedText) {
+                closeSnScanner();
+                var clean = decodedText.replace(/^SN-/i, '').trim();
+                validateSnAfterScan(clean);
+            },
+            function onScanFailure() {}
+        ).then(function() {
+            snScannerRunning = true;
+        }).catch(function(err) {
+            closeSnScanner();
+            alert('Gagal akses kamera: ' + err);
+        });
+    }
+
+    function closeSnScanner() {
+        var overlay = document.getElementById('sn-scanner-overlay');
+        overlay.style.display = 'none';
+        if (snHtml5Qr && snScannerRunning) {
+            snHtml5Qr.stop().then(function() {
+                snScannerRunning = false;
+            }).catch(function() {});
+        }
+    }
+
+    function scanSnFromPhoto(input) {
+        if (!input.files || !input.files[0]) return;
+        var file = input.files[0];
+        if (!snHtml5Qr) {
+            snHtml5Qr = new Html5Qrcode('sn-reader');
+        }
+        snHtml5Qr.scanFileV2(file, true)
+            .then(function(decodedText) {
+                var clean = decodedText.replace(/^SN-/i, '').trim();
+                validateSnAfterScan(clean);
+            })
+            .catch(function() {
+                alert('Tidak ditemukan barcode/QR di foto. Pastikan foto jelas dan fokus.');
+            });
+        input.value = '';
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2"></script>

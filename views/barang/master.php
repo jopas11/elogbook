@@ -15,8 +15,8 @@ $params = array();
 
 if ($search) {
     $s = '%' . $search . '%';
-    $where .= " AND (s.jenis_sparepart LIKE ? OR s.merk LIKE ? OR s.serial_number LIKE ? OR s.lokasi_penyimpanan LIKE ?)";
-    array_push($params, $s, $s, $s, $s);
+    $where .= " AND (s.jenis_sparepart LIKE ? OR s.merk LIKE ? OR s.type_sparepart LIKE ? OR s.serial_number LIKE ? OR s.lokasi_penyimpanan LIKE ?)";
+    array_push($params, $s, $s, $s, $s, $s);
 }
 if ($filterKategori) {
     $where .= " AND s.kategori = ?";
@@ -61,7 +61,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <input type="hidden" name="route" value="master_barang">
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Cari</label>
-                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama, merk, SN, lokasi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 w-48">
+                <input type="text" name="search" value="<?= escape($search) ?>" placeholder="Nama, type, merk, SN, lokasi..." class="px-3 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all duration-200 w-48">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Kategori</label>

@@ -10,6 +10,7 @@ class ApprovalController {
 
         $db = getDB();
         $status = _get($_GET, 'status', 'pending');
+        $search = trim(_get($_GET, 'search', ''));
 
         $where = "WHERE a.deleted_at IS NULL";
         $params = array();
@@ -17,6 +18,11 @@ class ApprovalController {
         if ($status && in_array($status, array('pending', 'approved', 'rejected'))) {
             $where .= " AND a.status = ?";
             $params[] = $status;
+        }
+        if ($search !== '') {
+            $s = '%' . $search . '%';
+            $where .= " AND (s.jenis_sparepart LIKE ? OR s.merk LIKE ? OR s.type_sparepart LIKE ? OR s.serial_number LIKE ? OR u.name LIKE ?)";
+            array_push($params, $s, $s, $s, $s, $s);
         }
 
         $baseQuery = "SELECT a.*, s.jenis_sparepart, s.merk, s.serial_number, u.name as user_name, approver.name as approved_by_name
@@ -45,6 +51,7 @@ class ApprovalController {
         $db = getDB();
         $user = $_SESSION['user'];
         $status = _get($_GET, 'status', 'pending');
+        $search = trim(_get($_GET, 'search', ''));
 
         $where = "WHERE a.deleted_at IS NULL AND a.user_id = ?";
         $params = array($user['id']);
@@ -52,6 +59,11 @@ class ApprovalController {
         if ($status && in_array($status, array('pending', 'approved', 'rejected'))) {
             $where .= " AND a.status = ?";
             $params[] = $status;
+        }
+        if ($search !== '') {
+            $s = '%' . $search . '%';
+            $where .= " AND (s.jenis_sparepart LIKE ? OR s.merk LIKE ? OR s.type_sparepart LIKE ? OR s.serial_number LIKE ?)";
+            array_push($params, $s, $s, $s, $s);
         }
 
         $baseQuery = "SELECT a.*, s.jenis_sparepart, s.merk, s.serial_number, approver.name as approved_by_name
