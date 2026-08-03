@@ -1,0 +1,17 @@
+RewriteEngine Off
+
+# Allow direct access to image files
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico|bmp|tiff)$">
+    Allow from all
+</FilesMatch>
+
+# Block PHP execution for security
+<FilesMatch "\.php$">
+    Deny from all
+</FilesMatch>
+<FilesMatch "\.php5$">
+    Deny from all
+</FilesMatch>
+<FilesMatch "\.phtml$">
+    Deny from all
+</FilesMatch>
