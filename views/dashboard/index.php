@@ -358,9 +358,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </div>
                     <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-2">
                         <template x-if="item.image">
-                            <img :src="'<?= APP_URL ?>/' + item.image"
+                            <img :src="'<?= rtrim(APP_URL, '/') ?>/' + item.image"
                                  class="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-zoom-in hover:opacity-90 transition"
-                                 @click="toggleImageZoom('<?= APP_URL ?>/' + item.image, item.jenis_sparepart)"
+                                 @click="toggleImageZoom('<?= rtrim(APP_URL, '/') ?>/' + item.image, item.jenis_sparepart)"
                                  loading="lazy">
                         </template>
                         <p class="text-sm text-gray-400 dark:text-gray-500 truncate" x-text="item.keterangan ? 'Keterangan: ' + item.keterangan : '-'"></p>
@@ -1099,7 +1099,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         const s = data.stats || {};
         const curPage = data.page || 1;
         const searchQ = q || '';
-        const APP_URL = '<?= APP_URL ?>';
+        const APP_URL = '<?= rtrim(APP_URL, '/') ?>';
 
         var esc = function(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 
@@ -1237,7 +1237,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         const isAdmin = <?= isAdmin() ? 'true' : 'false' ?>;
         const sp = data.data;
         const logs = data.logs || [];
-        const APP_URL = '<?= APP_URL ?>';
+        const APP_URL = '<?= rtrim(APP_URL, '/') ?>';
         var esc = function(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 
         // Status config

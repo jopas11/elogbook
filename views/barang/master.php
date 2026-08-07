@@ -195,7 +195,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <p><strong>Department:</strong> ${escapeHtml(data.data.department || '-')}</p>
                         <p><strong>Tanggal:</strong> ${escapeHtml(data.data.tanggal)}</p>
                         <p><strong>Keterangan:</strong> ${escapeHtml(data.data.keterangan || '-')}</p>
-                        ${data.data.image ? '<div class="mt-3"><strong>Foto:</strong><br><img src="<?= APP_URL ?>/' + escapeHtml(data.data.image) + '" class="mt-1 max-h-48 rounded-lg border border-gray-200 dark:border-gray-600 object-cover cursor-pointer" onclick="window.open(this.src)" loading="lazy"></div>' : ''}
+                        ${data.data.image ? '<div class="mt-3"><strong>Foto:</strong><br><img src="<?= rtrim(APP_URL, '/') ?>/' + escapeHtml(data.data.image) + '" class="mt-1 max-h-48 rounded-lg border border-gray-200 dark:border-gray-600 object-cover cursor-pointer" onclick="window.open(this.src)" loading="lazy"></div>' : ''}
                         ${logsHtml}
                     </div>
                 `,

@@ -117,9 +117,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td data-label="Keterangan" class="max-w-xs truncate text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape($log['keterangan_log']) ?></td>
                         <td data-label="Foto" class="text-center">
                             <?php if (!empty($log['image'])): ?>
-                            <img src="<?= APP_URL ?>/<?= escape($log['image']) ?>"
+                            <img src="<?= imageUrl($log['image']) ?>"
                                  class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition mx-auto"
-                                 onclick="window.open('<?= APP_URL ?>/<?= escape($log['image']) ?>')"
+                                 onclick="window.open('<?= imageUrl($log['image']) ?>')"
                                  loading="lazy" title="Klik untuk perbesar">
                             <?php else: ?>
                             <span class="text-gray-400 dark:text-gray-500 text-xs">-</span>

@@ -89,8 +89,8 @@
                         </td>
                         <td class="px-4 py-3">
                             <?php if (!empty($item['image'])): ?>
-                            <img src="<?= APP_URL ?>/<?= escape($item['image']) ?>" alt="Foto barang"
-                                 onclick="toggleImageZoom('<?= APP_URL ?>/<?= escape($item['image']) ?>', 'Foto Barang #<?= $item['id'] ?>')"
+                            <img src="<?= imageUrl($item['image']) ?>" alt="Foto barang"
+                                 onclick="toggleImageZoom('<?= imageUrl($item['image']) ?>', 'Foto Barang #<?= $item['id'] ?>')"
                                  class="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:ring-2 hover:ring-blue-400 transition">
                             <?php else: ?>
                             <span class="text-xs text-gray-400 dark:text-gray-500 italic">-</span>

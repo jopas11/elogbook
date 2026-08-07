@@ -34,6 +34,14 @@ function pageUrl($file) {
     return 'index.php?route=' . $page;
 }
 
+function imageUrl($path) {
+    $path = ltrim(trim($path), '/');
+    if ($path === '') {
+        return '';
+    }
+    return rtrim(APP_URL, '/') . '/' . $path;
+}
+
 function old($key, $default = '') {
     if (!isset($_SESSION['old']) || !is_array($_SESSION['old'])) {
         return $default;
