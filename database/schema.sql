@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS spareparts (
     department VARCHAR(255) DEFAULT NULL,
     status ENUM('Tersedia','Terpakai','Rusak','Dalam Perbaikan') DEFAULT 'Tersedia',
     keterangan TEXT DEFAULT NULL,
-    image VARCHAR(255) DEFAULT NULL,
+    image TEXT DEFAULT NULL, -- dapat berisi JSON array (multi-foto): ["public/uploads/...","public/uploads/..."]
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS logbooks (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sparepart_id INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    image VARCHAR(255) DEFAULT NULL,
+    image TEXT DEFAULT NULL, -- dapat berisi JSON array (multi-foto)
     tipe_transaksi ENUM('Barang Masuk','Barang Keluar','Ubah Status','Dalam Perbaikan','Permintaan','Dihapus','Dipinjam','Dikembalikan') NOT NULL,
     status_lama VARCHAR(50) DEFAULT NULL,
     status_baru VARCHAR(50) DEFAULT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS status_approvals (
     department VARCHAR(255) DEFAULT NULL,
     tanggal DATE DEFAULT NULL,
     keterangan TEXT DEFAULT NULL,
-    image VARCHAR(255) DEFAULT NULL,
+    image TEXT DEFAULT NULL, -- dapat berisi JSON array (multi-foto)
     status ENUM('pending','approved','rejected') DEFAULT 'pending',
     approved_by BIGINT UNSIGNED DEFAULT NULL,
     approved_at TIMESTAMP NULL DEFAULT NULL,

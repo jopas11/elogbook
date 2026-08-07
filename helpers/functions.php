@@ -285,6 +285,73 @@ function convertToWebp($tmpPath, $uploadDir, $filename) {
     return $destPath;
 }
 
+function parseImages($val) {
+    if (empty($val)) {
+        return array();
+    }
+    $decoded = json_decode($val, true);
+    if (is_array($decoded)) {
+        $paths = array();
+        foreach ($decoded as $p) {
+            if (is_string($p) && trim($p) !== '') {
+                $paths[] = $p;
+            }
+        }
+        return $paths;
+    }
+    if (is_string($val) && trim($val) !== '') {
+        return array($val);
+    }
+    return array();
+}
+
+function uploadMultipleImages($files, $maxFiles = 5, $maxSize = 2097152) {
+    $paths = array();
+    if (empty($files) || !is_array($files['name'])) {
+        return $paths;
+    }
+    $allowed = array('jpg', 'jpeg', 'png', 'webp');
+    $count = min(count($files['name']), $maxFiles);
+    for ($i = 0; $i < $count; $i++) {
+        if ($files['error'][$i] === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+        if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+            flash('error', 'Gagal upload foto (file ke-' . ($i + 1) . ').');
+            return '__FLASH_SET__';
+        }
+        $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed)) {
+            flash('error', 'Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+            return '__FLASH_SET__';
+        }
+        if ($files['size'][$i] > $maxSize) {
+            flash('error', 'Ukuran foto maksimal 2MB per file.');
+            return '__FLASH_SET__';
+        }
+        $uploadDir = __DIR__ . '/../public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        $filename = time() . '_' . bin2hex(openssl_random_pseudo_bytes(4)) . '.' . $ext;
+        $convertedPath = convertToWebp($files['tmp_name'][$i], $uploadDir, $filename);
+        if (!$convertedPath) {
+            flash('error', 'Gagal upload foto. Periksa izin folder uploads.');
+            return '__FLASH_SET__';
+        }
+        $webpName = pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+        $paths[] = 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $webpName;
+    }
+    return $paths;
+}
+
+function encodeImages($paths) {
+    if (empty($paths)) {
+        return null;
+    }
+    return json_encode(array_values($paths));
+}
+
 function ftSearch($fulltextCols, $searchTerm, $idCol = null) {
     $searchTerm = trim($searchTerm);
     $cols = implode(', ', $fulltextCols);

@@ -242,15 +242,23 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Barang</label>
                         <div class="flex items-start gap-4">
                             <div class="flex-1">
-                                <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required
+                                <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" required multiple
                                        @change="previewFotoAset($event)"
                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 dark:hover:file:dark:bg-blue-900/50 transition">
                             </div>
-                            <div x-show="fotoPreviewAset" x-cloak class="shrink-0">
-                                <img :src="fotoPreviewAset" class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
+                            <div x-show="fotoPreviewsAset.length > 0" x-cloak class="flex flex-wrap gap-2 shrink-0">
+                                <template x-for="(prev, i) in fotoPreviewsAset" :key="i">
+                                    <div class="relative">
+                                        <img :src="prev" class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
+                                        <button type="button" @click="hapusFotoPreview('aset', i)" title="Hapus foto"
+                                                class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition shadow-md">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </template>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB.</p>
+                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB per foto, hingga 5 foto.</p>
                         <p x-show="fotoError && tab === 'aset'" x-cloak class="text-xs text-red-500 dark:text-red-400 mt-1.5 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="fotoError"></span></p>
                     </div>
 
@@ -374,15 +382,23 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Barang <span class="text-red-500">*</span></label>
                         <div class="flex items-start gap-4">
                             <div class="flex-1">
-                                <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required
+                                <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" required multiple
                                        @change="previewFotoNonaset($event)"
                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 dark:hover:file:dark:bg-blue-900/50 transition">
                             </div>
-                            <div x-show="fotoPreviewNonaset" x-cloak class="shrink-0">
-                                <img :src="fotoPreviewNonaset" class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
+                            <div x-show="fotoPreviewsNonaset.length > 0" x-cloak class="flex flex-wrap gap-2 shrink-0">
+                                <template x-for="(prev, i) in fotoPreviewsNonaset" :key="i">
+                                    <div class="relative">
+                                        <img :src="prev" class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
+                                        <button type="button" @click="hapusFotoPreview('nonaset', i)" title="Hapus foto"
+                                                class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition shadow-md">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </template>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB. Wajib untuk semua transaksi.</p>
+                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB per foto, hingga 5 foto. Wajib untuk semua transaksi.</p>
                         <p x-show="fotoError && tab === 'nonaset'" x-cloak class="text-xs text-red-500 dark:text-red-400 mt-1.5 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="fotoError"></span></p>
                     </div>
 
@@ -396,7 +412,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <i class="fa-solid fa-arrow-left"></i> Batal
                 </a>
                 <button type="submit"
-                        :disabled="(tab === 'aset' && (!snFound || !sparepartId || !fotoPreviewAset)) || !!fotoError"
+                        :disabled="(tab === 'aset' && (!snFound || !sparepartId || fotoPreviewsAset.length === 0)) || !!fotoError"
                         class="px-5 py-2.5 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all inline-flex items-center gap-2 shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed magnetic-btn">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
@@ -455,10 +471,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             suggestionTimer: null,
             userPic: '<?= escape($user['name']) ?>',
             // Foto preview
-            fotoPreviewAset: '',
-            fotoPreviewNonaset: '',
+            fotoPreviewsAset: [],
+            fotoPreviewsNonaset: [],
             fotoError: '',
             MAX_FILE_SIZE: 2 * 1024 * 1024,
+            MAX_PHOTOS: 5,
             validateFile(file) {
                 if (file.size > this.MAX_FILE_SIZE) {
                     var ukuran = (file.size / (1024 * 1024)).toFixed(2);
@@ -469,20 +486,47 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 return true;
             },
             previewFotoAset(e) {
-                const file = e.target.files[0];
-                if (!file) { this.fotoPreviewAset = ''; return; }
-                if (!this.validateFile(file)) { e.target.value = ''; this.fotoPreviewAset = ''; return; }
-                const reader = new FileReader();
-                reader.onload = (ev) => { this.fotoPreviewAset = ev.target.result; };
-                reader.readAsDataURL(file);
+                const files = Array.prototype.slice.call(e.target.files || []);
+                if (!files.length) return;
+                const valid = files.filter((f) => this.validateFile(f));
+                if (valid.length !== files.length) { e.target.value = ''; return; }
+                if (this.fotoPreviewsAset.length + valid.length > this.MAX_PHOTOS) {
+                    this.fotoError = 'Maksimal ' + this.MAX_PHOTOS + ' foto per transaksi.';
+                    e.target.value = '';
+                    return;
+                }
+                const readerPromises = valid.map((file) => new Promise((res) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => res(ev.target.result);
+                    reader.readAsDataURL(file);
+                }));
+                Promise.all(readerPromises).then((results) => {
+                    this.fotoPreviewsAset = this.fotoPreviewsAset.concat(results);
+                });
             },
             previewFotoNonaset(e) {
-                const file = e.target.files[0];
-                if (!file) { this.fotoPreviewNonaset = ''; return; }
-                if (!this.validateFile(file)) { e.target.value = ''; this.fotoPreviewNonaset = ''; return; }
-                const reader = new FileReader();
-                reader.onload = (ev) => { this.fotoPreviewNonaset = ev.target.result; };
-                reader.readAsDataURL(file);
+                const files = Array.prototype.slice.call(e.target.files || []);
+                if (!files.length) return;
+                const valid = files.filter((f) => this.validateFile(f));
+                if (valid.length !== files.length) { e.target.value = ''; return; }
+                if (this.fotoPreviewsNonaset.length + valid.length > this.MAX_PHOTOS) {
+                    this.fotoError = 'Maksimal ' + this.MAX_PHOTOS + ' foto per transaksi.';
+                    e.target.value = '';
+                    return;
+                }
+                const readerPromises = valid.map((file) => new Promise((res) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => res(ev.target.result);
+                    reader.readAsDataURL(file);
+                }));
+                Promise.all(readerPromises).then((results) => {
+                    this.fotoPreviewsNonaset = this.fotoPreviewsNonaset.concat(results);
+                });
+            },
+            hapusFotoPreview(tab, i) {
+                if (tab === 'aset') { this.fotoPreviewsAset.splice(i, 1); }
+                else { this.fotoPreviewsNonaset.splice(i, 1); }
+                this.fotoError = '';
             },
             init() {
                 document.addEventListener('click', (e) => {
@@ -597,8 +641,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 this.asetDepartment = '';
                 this.status_lama = '-';
                 this.status_baru = '';
-                this.fotoPreviewAset = '';
-                this.fotoPreviewNonaset = '';
+                this.fotoPreviewsAset = [];
+                this.fotoPreviewsNonaset = [];
                 this.fotoError = '';
                 this.$el.querySelectorAll('input[type="file"]').forEach(el => el.value = '');
             },

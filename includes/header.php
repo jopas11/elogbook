@@ -455,6 +455,23 @@
             if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
         });
     }
+
+    /* Parse multi-image JSON array or single path string */
+    function imgList(val) {
+        if (!val) return [];
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') {
+            var t = val.trim();
+            if (t.charAt(0) === '[') {
+                try {
+                    var arr = JSON.parse(t);
+                    return Array.isArray(arr) ? arr.filter(Boolean) : [t];
+                } catch (e) { return [t]; }
+            }
+            return [t];
+        }
+        return [];
+    }
     </script>
 </head>
 <body class="aurora-bg text-gray-900 dark:text-gray-100 transition-colors duration-300 font-sans antialiased">

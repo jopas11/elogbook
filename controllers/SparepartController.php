@@ -243,9 +243,16 @@ class SparepartController {
         $status = _get($_POST, 'status', 'Tersedia');
         $keterangan = trim(_get($_POST, 'keterangan', ''));
 
-        // Optional image upload
-        $imagePath = null;
-        if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        // Optional image upload (multi, max 5)
+        $imageVal = null;
+        if (!empty($_FILES['images']) && is_array($_FILES['images']['name'])) {
+            $uploadResult = uploadMultipleImages($_FILES['images'], 5);
+            if ($uploadResult === '__FLASH_SET__') {
+                redirect('dashboard.php');
+            }
+            $imageVal = encodeImages($uploadResult);
+        } elseif (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            // Backward compat: single "image" field
             $file = $_FILES['image'];
             $allowed = array('jpg', 'jpeg', 'png', 'webp');
             $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -263,23 +270,11 @@ class SparepartController {
             $convertedPath = convertToWebp($file['tmp_name'], $uploadDir, $filename);
             if ($convertedPath) {
                 $webpName = pathinfo($filename, PATHINFO_FILENAME) . '.webp';
-                $imagePath = 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $webpName;
+                $imageVal = encodeImages(array('public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $webpName));
             } else {
                 flash('error', 'Gagal upload foto. Periksa izin folder uploads.');
                 redirect('dashboard.php');
             }
-        } elseif (!empty($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-            $uploadErrors = array(
-                UPLOAD_ERR_INI_SIZE => 'Ukuran foto melebihi batas server.',
-                UPLOAD_ERR_FORM_SIZE => 'Ukuran foto melebihi batas form.',
-                UPLOAD_ERR_PARTIAL => 'Foto hanya terupload sebagian.',
-                UPLOAD_ERR_NO_TMP_DIR => 'Folder temporary server tidak ditemukan.',
-                UPLOAD_ERR_CANT_WRITE => 'Gagal menulis file ke disk.',
-            );
-            $errCode = $_FILES['image']['error'];
-            $errMsg = isset($uploadErrors[$errCode]) ? $uploadErrors[$errCode] : 'Error upload tidak dikenal (kode: ' . $errCode . ').';
-            flash('error', $errMsg);
-            redirect('dashboard.php');
         }
 
         if ($kategori === 'Aset') {
@@ -298,20 +293,20 @@ class SparepartController {
             if ($kategori === 'Aset') {
                 $stmt = $db->prepare("INSERT INTO spareparts (user_id, kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan, image) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)");
                 foreach ($serialNumbers as $sn) {
-                    $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $sn, $tanggal, $merk, $pic, $department, $status, $keterangan, $imagePath));
+                    $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $sn, $tanggal, $merk, $pic, $department, $status, $keterangan, $imageVal));
                     $inserted++;
                 }
                 $lastId = $db->lastInsertId();
             } else {
                 $stmt = $db->prepare("INSERT INTO spareparts (user_id, kategori, jenis_sparepart, type_sparepart, serial_number, quantity, tanggal, merk, pic, department, status, keterangan, image) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $quantity, $tanggal, $merk, $pic, $department, $status, $keterangan, $imagePath));
+                $stmt->execute(array($user['id'], $kategori, $jenis_sparepart, $type_sparepart, $quantity, $tanggal, $merk, $pic, $department, $status, $keterangan, $imageVal));
                 $inserted = $quantity;
                 $lastId = $db->lastInsertId();
             }
 
             if ($lastId) {
                 $stmt = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, image, tipe_transaksi, status_baru, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, ?, 'Barang Masuk', ?, ?, ?, ?, ?)");
-                $stmt->execute(array($lastId, $user['id'], $imagePath, $status, $pic, $department, $tanggal, $keterangan));
+                $stmt->execute(array($lastId, $user['id'], $imageVal, $status, $pic, $department, $tanggal, $keterangan));
             }
 
             $db->commit();
