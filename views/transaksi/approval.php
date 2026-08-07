@@ -88,10 +88,18 @@
                             </div>
                         </td>
                         <td class="px-4 py-3">
-                            <?php if (!empty($item['image'])): ?>
-                            <img src="<?= APP_URL ?>/<?= escape($item['image']) ?>" alt="Foto barang"
-                                 onclick="toggleImageZoom('<?= APP_URL ?>/<?= escape($item['image']) ?>', 'Foto Barang #<?= $item['id'] ?>')"
-                                 class="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:ring-2 hover:ring-blue-400 transition">
+                            <?php $imgs = parseImages($item['image']); ?>
+                            <?php if (!empty($imgs)): ?>
+                            <div class="flex gap-1 flex-wrap">
+                                <?php foreach (array_slice($imgs, 0, 3) as $img): ?>
+                                <img src="<?= APP_URL ?>/<?= escape($img) ?>" alt="Foto barang"
+                                     onclick="toggleImageZoom('<?= APP_URL ?>/<?= escape($img) ?>', 'Foto Barang #<?= $item['id'] ?>')"
+                                     class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:ring-2 hover:ring-blue-400 transition">
+                                <?php endforeach; ?>
+                                <?php if (count($imgs) > 3): ?>
+                                <span class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">+<?= count($imgs) - 3 ?></span>
+                                <?php endif; ?>
+                            </div>
                             <?php else: ?>
                             <span class="text-xs text-gray-400 dark:text-gray-500 italic">-</span>
                             <?php endif; ?>

@@ -195,7 +195,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <p><strong>Department:</strong> ${escapeHtml(data.data.department || '-')}</p>
                         <p><strong>Tanggal:</strong> ${escapeHtml(data.data.tanggal)}</p>
                         <p><strong>Keterangan:</strong> ${escapeHtml(data.data.keterangan || '-')}</p>
-                        ${data.data.image ? '<div class="mt-3"><strong>Foto:</strong><br><img src="<?= APP_URL ?>/' + escapeHtml(data.data.image) + '" class="mt-1 max-h-48 rounded-lg border border-gray-200 dark:border-gray-600 object-cover cursor-pointer" onclick="window.open(this.src)" loading="lazy"></div>' : ''}
+                        ${(() => { var imgs = []; try { var v = JSON.parse(data.data.image); imgs = Array.isArray(v) ? v : [data.data.image]; } catch(e) { imgs = data.data.image ? [data.data.image] : []; } return imgs.length > 0 ? '<div class="mt-3"><strong>Foto:</strong><br><div class="flex flex-wrap gap-2 mt-1">' + imgs.map(function(img) { return '<img src="<?= APP_URL ?>/' + escapeHtml(img) + '" class="h-32 rounded-lg border border-gray-200 dark:border-gray-600 object-cover cursor-pointer hover:opacity-80 transition" onclick="window.open(this.src)" loading="lazy">'; }).join('') + '</div></div>' : ''; })()}
                         ${logsHtml}
                     </div>
                 `,

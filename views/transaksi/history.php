@@ -116,11 +116,19 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td data-label="User" class="text-gray-600 dark:text-gray-400"><?= escape($log['user_name']) ?></td>
                         <td data-label="Keterangan" class="max-w-xs truncate text-gray-600 dark:text-gray-400 hidden lg:table-cell"><?= escape($log['keterangan_log']) ?></td>
                         <td data-label="Foto" class="text-center">
-                            <?php if (!empty($log['image'])): ?>
-                            <img src="<?= APP_URL ?>/<?= escape($log['image']) ?>"
-                                 class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition mx-auto"
-                                 onclick="window.open('<?= APP_URL ?>/<?= escape($log['image']) ?>')"
-                                 loading="lazy" title="Klik untuk perbesar">
+                            <?php $imgs = parseImages($log['image']); ?>
+                            <?php if (!empty($imgs)): ?>
+                            <div class="flex gap-1 flex-wrap justify-center">
+                                <?php foreach (array_slice($imgs, 0, 3) as $img): ?>
+                                <img src="<?= APP_URL ?>/<?= escape($img) ?>"
+                                     class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition"
+                                     onclick="toggleImageZoom('<?= APP_URL ?>/<?= escape($img) ?>', 'Foto Log')"
+                                     loading="lazy" title="Klik untuk perbesar">
+                                <?php endforeach; ?>
+                                <?php if (count($imgs) > 3): ?>
+                                <span class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">+<?= count($imgs) - 3 ?></span>
+                                <?php endif; ?>
+                            </div>
                             <?php else: ?>
                             <span class="text-gray-400 dark:text-gray-500 text-xs">-</span>
                             <?php endif; ?>

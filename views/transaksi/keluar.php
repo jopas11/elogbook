@@ -239,18 +239,26 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <!-- Foto Aset -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Barang</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Barang <span class="text-gray-400 font-normal">(max 5)</span></label>
                         <div class="flex items-start gap-4">
                             <div class="flex-1">
-                                <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required
-                                       @change="previewFotoAset($event)"
+                                <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple
+                                       @change="handleFoto($event, 'aset')"
                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 dark:hover:file:dark:bg-blue-900/50 transition">
                             </div>
-                            <div x-show="fotoPreviewAset" x-cloak class="shrink-0">
-                                <img :src="fotoPreviewAset" class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
-                            </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB.</p>
+                        <div x-show="fotoPreviewAset.length > 0" x-cloak class="flex flex-wrap gap-2 mt-2">
+                            <template x-for="(foto, idx) in fotoPreviewAset" :key="idx">
+                                <div class="relative shrink-0">
+                                    <img :src="foto.src" class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-pointer hover:opacity-80 transition" @click="toggleImageZoom(foto.src, foto.name)">
+                                    <button type="button" @click.stop="hapusFoto('aset', idx)" title="Hapus foto"
+                                            class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition shadow-md">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB per foto, max 5 foto.</p>
                         <p x-show="fotoError && tab === 'aset'" x-cloak class="text-xs text-red-500 dark:text-red-400 mt-1.5 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="fotoError"></span></p>
                     </div>
 
@@ -371,18 +379,26 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <!-- Foto Non-Aset -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Barang <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Barang <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(max 5)</span></label>
                         <div class="flex items-start gap-4">
                             <div class="flex-1">
-                                <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required
-                                       @change="previewFotoNonaset($event)"
+                                <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple
+                                       @change="handleFoto($event, 'nonaset')"
                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 dark:hover:file:dark:bg-blue-900/50 transition">
                             </div>
-                            <div x-show="fotoPreviewNonaset" x-cloak class="shrink-0">
-                                <img :src="fotoPreviewNonaset" class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm">
-                            </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB. Wajib untuk semua transaksi.</p>
+                        <div x-show="fotoPreviewNonaset.length > 0" x-cloak class="flex flex-wrap gap-2 mt-2">
+                            <template x-for="(foto, idx) in fotoPreviewNonaset" :key="idx">
+                                <div class="relative shrink-0">
+                                    <img :src="foto.src" class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-pointer hover:opacity-80 transition" @click="toggleImageZoom(foto.src, foto.name)">
+                                    <button type="button" @click.stop="hapusFoto('nonaset', idx)" title="Hapus foto"
+                                            class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition shadow-md">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB per foto, max 5 foto. Wajib untuk semua transaksi.</p>
                         <p x-show="fotoError && tab === 'nonaset'" x-cloak class="text-xs text-red-500 dark:text-red-400 mt-1.5 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="fotoError"></span></p>
                     </div>
 
@@ -396,7 +412,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <i class="fa-solid fa-arrow-left"></i> Batal
                 </a>
                 <button type="submit"
-                        :disabled="(tab === 'aset' && (!snFound || !sparepartId || !fotoPreviewAset)) || !!fotoError"
+                        :disabled="(tab === 'aset' && (!snFound || !sparepartId || fotoPreviewAset.length === 0)) || (tab === 'nonaset' && fotoPreviewNonaset.length === 0) || !!fotoError"
                         class="px-5 py-2.5 bg-gradient-to-r bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all inline-flex items-center gap-2 shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed magnetic-btn">
                     <i class="fa-solid fa-save"></i> Simpan
                 </button>
@@ -455,34 +471,50 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             suggestionTimer: null,
             userPic: '<?= escape($user['name']) ?>',
             // Foto preview
-            fotoPreviewAset: '',
-            fotoPreviewNonaset: '',
+            fotoPreviewAset: [],
+            fotoPreviewNonaset: [],
             fotoError: '',
             MAX_FILE_SIZE: 2 * 1024 * 1024,
+            MAX_FILES: 5,
             validateFile(file) {
                 if (file.size > this.MAX_FILE_SIZE) {
                     var ukuran = (file.size / (1024 * 1024)).toFixed(2);
-                    this.fotoError = 'Ukuran foto ' + ukuran + 'MB melebihi batas maksimal 2MB. Silakan kompres atau pilih foto lain.';
+                    this.fotoError = 'Ukuran foto "' + file.name + '" (' + ukuran + 'MB) melebihi batas 2MB.';
                     return false;
                 }
                 this.fotoError = '';
                 return true;
             },
-            previewFotoAset(e) {
-                const file = e.target.files[0];
-                if (!file) { this.fotoPreviewAset = ''; return; }
-                if (!this.validateFile(file)) { e.target.value = ''; this.fotoPreviewAset = ''; return; }
-                const reader = new FileReader();
-                reader.onload = (ev) => { this.fotoPreviewAset = ev.target.result; };
-                reader.readAsDataURL(file);
+            handleFoto(e, target) {
+                var files = e.target.files;
+                if (!files || files.length === 0) return;
+                var arr = target === 'aset' ? this.fotoPreviewAset : this.fotoPreviewNonaset;
+                var remaining = this.MAX_FILES - arr.length;
+                if (remaining <= 0) {
+                    this.fotoError = 'Maksimal ' + this.MAX_FILES + ' foto.';
+                    e.target.value = '';
+                    return;
+                }
+                var count = Math.min(files.length, remaining);
+                for (var i = 0; i < count; i++) {
+                    var file = files[i];
+                    if (!this.validateFile(file)) continue;
+                    var self = this;
+                    var reader = new FileReader();
+                    reader.onload = (function(f, tgt) {
+                        return function(ev) {
+                            if (tgt === 'aset') self.fotoPreviewAset.push({ name: f.name, src: ev.target.result });
+                            else self.fotoPreviewNonaset.push({ name: f.name, src: ev.target.result });
+                        };
+                    })(file, target);
+                    reader.readAsDataURL(file);
+                }
+                e.target.value = '';
             },
-            previewFotoNonaset(e) {
-                const file = e.target.files[0];
-                if (!file) { this.fotoPreviewNonaset = ''; return; }
-                if (!this.validateFile(file)) { e.target.value = ''; this.fotoPreviewNonaset = ''; return; }
-                const reader = new FileReader();
-                reader.onload = (ev) => { this.fotoPreviewNonaset = ev.target.result; };
-                reader.readAsDataURL(file);
+            hapusFoto(target, idx) {
+                if (target === 'aset') this.fotoPreviewAset.splice(idx, 1);
+                else this.fotoPreviewNonaset.splice(idx, 1);
+                this.fotoError = '';
             },
             init() {
                 document.addEventListener('click', (e) => {
