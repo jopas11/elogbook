@@ -360,9 +360,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <template x-if="imgList(item.image).length > 0">
                             <div class="flex flex-wrap gap-1.5">
                                 <template x-for="(img, i) in imgList(item.image).slice(0, 3)" :key="i">
-                                    <img :src="'<?= rtrim(APP_URL, '/') ?>/' + img"
+                                    <img :src="'<?= APP_BASE_PATH ?>/' + img"
                                          class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-zoom-in hover:opacity-90 transition"
-                                         @click="toggleImageZoom('<?= rtrim(APP_URL, '/') ?>/' + img, item.jenis_sparepart)"
+                                         @click="toggleImageZoom('<?= APP_BASE_PATH ?>/' + img, item.jenis_sparepart)"
                                          loading="lazy">
                                 </template>
                                 <span x-show="imgList(item.image).length > 3"
@@ -1144,7 +1144,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         const s = data.stats || {};
         const curPage = data.page || 1;
         const searchQ = q || '';
-        const APP_URL = '<?= rtrim(APP_URL, '/') ?>';
+        const APP_BASE = '<?= APP_BASE_PATH ?>';
 
         var esc = function(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 
@@ -1200,7 +1200,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             var imgArr = imgList(sp.image);
             if (imgArr.length > 0) {
                 thumbHtml = '<div class="relative inline-block">';
-                thumbHtml += '<img src="' + APP_URL + '/' + esc(imgArr[0]) + '" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" loading="lazy" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_URL + '/' + esc(imgArr[0]) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
+                thumbHtml += '<img src="' + APP_BASE + '/' + esc(imgArr[0]) + '" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" loading="lazy" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_BASE + '/' + esc(imgArr[0]) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
                 if (imgArr.length > 1) thumbHtml += '<span class="absolute -bottom-1 -right-1 min-w-4 h-4 px-0.5 text-[8px] bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow">+' + (imgArr.length - 1) + '</span>';
                 thumbHtml += '</div>';
             } else {
@@ -1286,7 +1286,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         const isAdmin = <?= isAdmin() ? 'true' : 'false' ?>;
         const sp = data.data;
         const logs = data.logs || [];
-        const APP_URL = '<?= rtrim(APP_URL, '/') ?>';
+        const APP_BASE = '<?= APP_BASE_PATH ?>';
         var esc = function(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 
         // Status config
@@ -1304,7 +1304,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         if (imgArr.length > 0) {
             photoHtml = '<div class="flex flex-wrap gap-2">';
             imgArr.forEach(function(p) {
-                photoHtml += '<img src="' + APP_URL + '/' + esc(p) + '" class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl object-cover border border-gray-100 dark:border-gray-700 shadow-sm cursor-zoom-in" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_URL + '/' + esc(p) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
+                photoHtml += '<img src="' + APP_BASE + '/' + esc(p) + '" class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl object-cover border border-gray-100 dark:border-gray-700 shadow-sm cursor-zoom-in" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_BASE + '/' + esc(p) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
             });
             photoHtml += '</div>';
         } else {

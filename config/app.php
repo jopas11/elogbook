@@ -24,6 +24,8 @@ define('DB_NAME', isset($_ENV['DB_NAME']) ? $_ENV['DB_NAME'] : '');
 define('DB_USER', isset($_ENV['DB_USER']) ? $_ENV['DB_USER'] : 'root');
 define('DB_PASS', isset($_ENV['DB_PASS']) ? $_ENV['DB_PASS'] : '');
 define('APP_URL', isset($_ENV['APP_URL']) ? $_ENV['APP_URL'] : 'http://localhost');
+$scriptPath = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])) : '';
+define('APP_BASE_PATH', ($scriptPath === '/' || $scriptPath === '') ? '' : $scriptPath);
 define('APP_NAME', isset($_ENV['APP_NAME']) ? $_ENV['APP_NAME'] : 'App');
 
 session_start();

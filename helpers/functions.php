@@ -39,7 +39,7 @@ function imageUrl($path) {
     if ($path === '') {
         return '';
     }
-    return rtrim(APP_URL, '/') . '/' . $path;
+    return APP_BASE_PATH . '/' . $path;
 }
 
 function old($key, $default = '') {
