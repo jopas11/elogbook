@@ -654,15 +654,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         if (!this.addFotoPreviews.length) { this.$refs.fileFoto.value = ''; }
     }
 }" 
+     x-show="open" 
+     x-cloak 
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
      @open-tambah-modal.window="open = true"
      @keydown.escape.window="open = false"
-     class="contents">
-<template x-if="open">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
-         x-transition:enter="modal-enter-active"
-         x-transition:enter-start="modal-enter"
-         x-transition:leave="modal-leave-active"
-         x-transition:leave-end="modal-leave">
+     x-transition:enter="modal-enter-active"
+     x-transition:enter-start="modal-enter"
+     x-transition:leave="modal-leave-active"
+     x-transition:leave-end="modal-leave">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="open = false" x-transition:enter="backdrop-enter-active" x-transition:enter-start="backdrop-enter" x-transition:leave="backdrop-leave-active" x-transition:leave-end="backdrop-leave"></div>
     <div class="glass-panel-strong rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10">
         <div class="px-6 py-4 border-b border-black/5 dark:border-white/5 flex justify-between items-center sticky top-0 glass-panel-strong rounded-t-2xl">
@@ -785,8 +785,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
         </form>
     </div>
-    </div>
-</template>
 </div>
 
 <!-- Scanner Overlay -->
@@ -845,9 +843,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     }
 
     function toggleAddQty() {
-        const kat = document.getElementById('add-kategori').value;
+        const katEl = document.getElementById('add-kategori');
         const wrap = document.getElementById('add-qty-wrap');
         const qty = document.getElementById('input-qty');
+        if (!katEl || !wrap || !qty) return;
+        const kat = katEl.value;
         if (kat === 'Aset') {
             wrap.style.display = 'none';
             qty.required = false;
@@ -859,9 +859,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     toggleAddQty();
 
     function toggleAddSerial() {
-        const kat = document.getElementById('add-kategori').value;
+        const katEl = document.getElementById('add-kategori');
         const wrap = document.getElementById('add-serial-wrap');
+        if (!katEl || !wrap) return;
+        const kat = katEl.value;
         const sn = wrap.querySelector('input[name="serial_number"]');
+        if (!sn) return;
         if (kat === 'Non-Aset') {
             wrap.style.display = 'none';
             sn.required = false;
