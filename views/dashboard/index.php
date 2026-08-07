@@ -649,19 +649,20 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             this.addFotoError = 'Ada foto melebihi batas 2MB per foto.';
         }
     },
-    hapusFoto(i) {
+     hapusFoto(i) {
         this.addFotoPreviews.splice(i, 1);
         if (!this.addFotoPreviews.length) { this.$refs.fileFoto.value = ''; }
     }
 }" 
-     x-show="open" 
-     x-cloak 
-     class="fixed inset-0 z-50 flex items-center justify-center p-4"
      @open-tambah-modal.window="open = true"
-     x-transition:enter="modal-enter-active"
-     x-transition:enter-start="modal-enter"
-     x-transition:leave="modal-leave-active"
-     x-transition:leave-end="modal-leave">
+     @keydown.escape.window="open = false"
+     class="contents">
+<template x-if="open">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         x-transition:enter="modal-enter-active"
+         x-transition:enter-start="modal-enter"
+         x-transition:leave="modal-leave-active"
+         x-transition:leave-end="modal-leave">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="open = false" x-transition:enter="backdrop-enter-active" x-transition:enter-start="backdrop-enter" x-transition:leave="backdrop-leave-active" x-transition:leave-end="backdrop-leave"></div>
     <div class="glass-panel-strong rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10">
         <div class="px-6 py-4 border-b border-black/5 dark:border-white/5 flex justify-between items-center sticky top-0 glass-panel-strong rounded-t-2xl">
@@ -784,6 +785,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
         </form>
     </div>
+    </div>
+</template>
 </div>
 
 <!-- Scanner Overlay -->
