@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS spareparts (
     department VARCHAR(255) DEFAULT NULL,
     status ENUM('Tersedia','Terpakai','Rusak','Dalam Perbaikan') DEFAULT 'Tersedia',
     keterangan TEXT DEFAULT NULL,
-    image TEXT DEFAULT NULL,
+    image VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS logbooks (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sparepart_id INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    image TEXT DEFAULT NULL,
+    image VARCHAR(255) DEFAULT NULL,
     tipe_transaksi ENUM('Barang Masuk','Barang Keluar','Ubah Status','Dalam Perbaikan','Permintaan','Dihapus','Dipinjam','Dikembalikan') NOT NULL,
     status_lama VARCHAR(50) DEFAULT NULL,
     status_baru VARCHAR(50) DEFAULT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS status_approvals (
     department VARCHAR(255) DEFAULT NULL,
     tanggal DATE DEFAULT NULL,
     keterangan TEXT DEFAULT NULL,
-    image TEXT DEFAULT NULL,
+    image VARCHAR(255) DEFAULT NULL,
     status ENUM('pending','approved','rejected') DEFAULT 'pending',
     approved_by BIGINT UNSIGNED DEFAULT NULL,
     approved_at TIMESTAMP NULL DEFAULT NULL,
@@ -131,9 +131,3 @@ CREATE TABLE IF NOT EXISTS status_approvals (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
 );
-
--- Migration: Change image columns from VARCHAR(255) to TEXT for multiple images support
--- Run these if you have an existing database:
--- ALTER TABLE spareparts MODIFY image TEXT DEFAULT NULL;
--- ALTER TABLE logbooks MODIFY image TEXT DEFAULT NULL;
--- ALTER TABLE status_approvals MODIFY image TEXT DEFAULT NULL;

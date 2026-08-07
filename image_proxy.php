@@ -1,7 +1,8 @@
 <?php
 /**
- * Image Proxy — serve images from public/uploads/ via /public/uploads/ URL.
- * This allows the app to use APP_URL/public/uploads/... for all image requests.
+ * Image Proxy — serve images from files/public/uploads/ via /public/uploads/ URL.
+ * This allows the app to use APP_URL/public/uploads/... while the actual files
+ * are served from the files/ directory on the server.
  */
 
 $path = isset($_GET['path']) ? $_GET['path'] : '';
@@ -12,7 +13,7 @@ if ($path === '' || strpos($path, '..') !== false) {
     exit;
 }
 
-$baseDir = __DIR__ . '/public/uploads/';
+$baseDir = __DIR__ . '/files/public/uploads/';
 $file = $baseDir . $path;
 
 if (!file_exists($file) || !is_file($file)) {

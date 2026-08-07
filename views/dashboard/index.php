@@ -358,14 +358,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </div>
                     <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-2">
                         <template x-if="item.image">
-                            <div class="flex flex-wrap gap-1.5" x-data="{ imgs: (() => { try { var v = JSON.parse(item.image); return Array.isArray(v) ? v : [item.image]; } catch(e) { return item.image ? [item.image] : []; } })() }">
-                                <template x-for="(img, i) in imgs" :key="i">
-                                    <img :src="'<?= APP_URL ?>/' + img"
-                                         class="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-zoom-in hover:opacity-90 transition"
-                                         @click="toggleImageZoom('<?= APP_URL ?>/' + img, item.jenis_sparepart)"
-                                         loading="lazy">
-                                </template>
-                            </div>
+                            <img :src="'<?= APP_URL ?>/' + item.image"
+                                 class="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-zoom-in hover:opacity-90 transition"
+                                 @click="toggleImageZoom('<?= APP_URL ?>/' + item.image, item.jenis_sparepart)"
+                                 loading="lazy">
                         </template>
                         <p class="text-sm text-gray-400 dark:text-gray-500 truncate" x-text="item.keterangan ? 'Keterangan: ' + item.keterangan : '-'"></p>
                     </div>
@@ -458,12 +454,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <?php foreach ($groups as $i => $g): ?>
                     <?php
                         $typeLabel = $g['type_sparepart'] ?: '-';
+                        // ** PERBAIKAN: gunakan type mentah, jangan urlencode, cukup escape HTML
                         $typeRaw = isset($g['type_sparepart']) ? $g['type_sparepart'] : '';
-                        $thumbSrc = '';
-                        if (!empty($g['thumbnail_image'])) {
-                            $imgs = parseImages($g['thumbnail_image']);
-                            $thumbSrc = !empty($imgs) ? $imgs[0] : '';
-                        }
+                        $thumbSrc = !empty($g['thumbnail_image']) ? $g['thumbnail_image'] : '';
                         $lastUpdate = $g['last_updated'] ? date('d/m/Y', strtotime($g['last_updated'])) : '-';
                         $lastPic = $g['last_pic'] ?: '-';
                     ?>
@@ -471,7 +464,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         onclick="event.preventDefault(); document.querySelector('[data-detail-btn=\'<?= $i ?>\']').click();">
                         <td class="px-3 py-4 text-center hidden sm:table-cell no-label">
                             <?php if ($thumbSrc): ?>
-                            <img src="<?= APP_URL ?>/<?= escape($thumbSrc) ?>" class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" alt="" loading="lazy" onclick="event.stopPropagation(); toggleImageZoom('<?= APP_URL ?>/<?= escape($thumbSrc) ?>', '<?= escape($g['jenis_sparepart']) ?>')">
+                            <img src="<?= escape($thumbSrc) ?>" class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" alt="" loading="lazy" onclick="event.stopPropagation(); toggleImageZoom('<?= escape($g['thumbnail_image']) ?>', '<?= escape($g['jenis_sparepart']) ?>')">
                             <?php else: ?>
                             <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
                                 <i class="fa-solid fa-box text-gray-400 dark:text-gray-500 text-sm"></i>
@@ -619,40 +612,28 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 <!-- Tambah Modal -->
 <div x-data="{ 
     open: false,
-    addFotoPreviews: [],
+    addFotoPreview: '',
     addFotoError: '',
     MAX_FILE_SIZE: 2 * 1024 * 1024,
-    MAX_FILES: 5,
     handleAddFoto(e) {
-        var files = e.target.files;
-        if (!files || files.length === 0) { return; }
-        var remaining = this.MAX_FILES - this.addFotoPreviews.length;
-        if (remaining <= 0) {
-            this.addFotoError = 'Maksimal ' + this.MAX_FILES + ' foto.';
+        var file = e.target.files[0];
+        if (!file) { this.addFotoPreview = ''; return; }
+        if (file.size > this.MAX_FILE_SIZE) {
+            this.addFotoError = 'Ukuran foto ' + (file.size / (1024 * 1024)).toFixed(2) + 'MB melebihi batas 2MB.';
             e.target.value = '';
+            this.addFotoPreview = '';
             return;
         }
-        var self = this;
-        var count = Math.min(files.length, remaining);
-        for (var i = 0; i < count; i++) {
-            var file = files[i];
-            if (file.size > this.MAX_FILE_SIZE) {
-                this.addFotoError = 'Foto "' + file.name + '" (' + (file.size / (1024 * 1024)).toFixed(2) + 'MB) melebihi batas 2MB.';
-                continue;
-            }
-            var reader = new FileReader();
-            reader.onload = (function(f) {
-                return function(ev) {
-                    self.addFotoPreviews.push({ name: f.name, src: ev.target.result });
-                };
-            })(file);
-            reader.readAsDataURL(file);
-        }
-        e.target.value = '';
-    },
-    hapusFoto(idx) {
-        this.addFotoPreviews.splice(idx, 1);
         this.addFotoError = '';
+        var self = this;
+        var reader = new FileReader();
+        reader.onload = function(ev) { self.addFotoPreview = ev.target.result; };
+        reader.readAsDataURL(file);
+    },
+    hapusFoto() {
+        this.addFotoPreview = '';
+        this.addFotoError = '';
+        this.$refs.fileFoto.value = '';
     }
 }" 
      x-show="open" 
@@ -748,32 +729,28 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <textarea name="keterangan" rows="2" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none transition"></textarea>
                 </div>
                 <div class="col-span-1 sm:col-span-2">
-                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Foto <span class="text-gray-400 font-normal">(Opsional, maks 5)</span></label>
+                    <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1.5">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
                     <div class="flex items-start gap-4">
                         <div class="flex-1">
-                            <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple x-ref="fileFoto"
+                            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" x-ref="fileFoto"
                                    @change="handleAddFoto($event)"
                                    class="w-full text-base text-gray-500 dark:text-gray-400 file:mr-3 file:py-2.5 file:px-5 file:rounded-lg file:border-0 file:text-base file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/50 transition">
                         </div>
-                    </div>
-                    <div x-show="addFotoPreviews.length > 0" x-cloak class="flex flex-wrap gap-2 mt-2">
-                        <template x-for="(foto, idx) in addFotoPreviews" :key="idx">
-                            <div class="relative shrink-0">
-                                <img :src="foto.src" class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-105 transition" @click="toggleImageZoom(foto.src, foto.name)">
-                                <div class="absolute -top-2 -right-2 flex gap-1">
-                                    <button type="button" @click.stop="toggleImageZoom(foto.src, foto.name)" title="Perbesar foto"
-                                            class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs hover:bg-blue-700 transition shadow-md">
-                                        <i class="fa-solid fa-magnifying-glass-plus"></i>
-                                    </button>
-                                    <button type="button" @click.stop="hapusFoto(idx)" title="Hapus foto"
-                                            class="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition shadow-md">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
+                        <div x-show="addFotoPreview" x-cloak class="shrink-0 relative">
+                            <img :src="addFotoPreview" class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-105 transition" @click="toggleImageZoom(addFotoPreview, 'Preview Foto')">
+                            <div class="absolute -top-2 -right-2 flex gap-1">
+                                <button type="button" @click.stop="toggleImageZoom(addFotoPreview, 'Preview Foto')" title="Perbesar foto"
+                                        class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs hover:bg-blue-700 transition shadow-md">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                </button>
+                                <button type="button" @click.stop="hapusFoto()" title="Hapus foto"
+                                        class="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition shadow-md">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
-                        </template>
+                        </div>
                     </div>
-                    <p class="text-sm text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB per foto, max 5 foto.</p>
+                    <p class="text-sm text-gray-400 mt-1">Format: JPG, PNG, WebP. Maksimal 2MB.</p>
                     <p x-show="addFotoError" x-cloak class="text-sm text-red-500 dark:text-red-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i><span x-text="addFotoError"></span></p>
                 </div>
             </div>
@@ -1176,21 +1153,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             var snDisplay = (sp.serial_number && sp.kategori !== 'Non-Aset') ? '<span class="font-mono font-semibold text-gray-800 dark:text-gray-200">' + esc(sp.serial_number.replace(/^SN-/, '')) + '</span>' : '<span class="text-xs text-gray-400 italic font-medium bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">qty: ' + sp.quantity + '</span>';
             var thumbHtml = '';
             if (sp.image) {
-                var imgs = [];
-                try { var v = JSON.parse(sp.image); imgs = Array.isArray(v) ? v : [sp.image]; } catch(e) { imgs = sp.image ? [sp.image] : []; }
-                if (imgs.length > 0) {
-                    thumbHtml = '<div class="flex gap-0.5">';
-                    var showCount = Math.min(imgs.length, 3);
-                    for (var ii = 0; ii < showCount; ii++) {
-                        thumbHtml += '<img src="' + APP_URL + '/' + esc(imgs[ii]) + '" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" loading="lazy" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_URL + '/' + esc(imgs[ii]) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
-                    }
-                    if (imgs.length > 3) {
-                        thumbHtml += '<span class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">+' + (imgs.length - 3) + '</span>';
-                    }
-                    thumbHtml += '</div>';
-                } else {
-                    thumbHtml = '<div class="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center"><i class="fa-solid fa-box text-gray-400 text-xs"></i></div>';
-                }
+                thumbHtml = '<img src="' + APP_URL + '/' + esc(sp.image) + '" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-110 transition" loading="lazy" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_URL + '/' + esc(sp.image) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
             } else {
                 thumbHtml = '<div class="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center"><i class="fa-solid fa-box text-gray-400 text-xs"></i></div>';
             }
@@ -1289,17 +1252,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         // Photo
         var photoHtml = '';
         if (sp.image) {
-            var imgs = [];
-            try { var v = JSON.parse(sp.image); imgs = Array.isArray(v) ? v : [sp.image]; } catch(e) { imgs = sp.image ? [sp.image] : []; }
-            if (imgs.length > 0) {
-                photoHtml = '<div class="flex flex-wrap gap-2">';
-                for (var ii = 0; ii < imgs.length; ii++) {
-                    photoHtml += '<img src="' + APP_URL + '/' + esc(imgs[ii]) + '" class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover border border-gray-100 dark:border-gray-700 shadow-sm cursor-zoom-in hover:scale-105 transition" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_URL + '/' + esc(imgs[ii]) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
-                }
-                photoHtml += '</div>';
-            } else {
-                photoHtml = '<div class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex flex-col items-center justify-center text-gray-300 dark:text-gray-600"><i class="fa-solid fa-image text-2xl sm:text-4xl mb-2"></i><span class="text-[10px] sm:text-xs">Tidak ada foto</span></div>';
-            }
+            photoHtml = '<img src="' + APP_URL + '/' + esc(sp.image) + '" class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl object-cover border border-gray-100 dark:border-gray-700 shadow-sm cursor-zoom-in" alt="" onclick="event.stopPropagation(); toggleImageZoom(\'' + APP_URL + '/' + esc(sp.image) + '\', \'' + esc(sp.jenis_sparepart || '') + '\')">';
         } else {
             photoHtml = '<div class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex flex-col items-center justify-center text-gray-300 dark:text-gray-600"><i class="fa-solid fa-image text-2xl sm:text-4xl mb-2"></i><span class="text-[10px] sm:text-xs">Tidak ada foto</span></div>';
         }

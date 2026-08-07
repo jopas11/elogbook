@@ -4,28 +4,40 @@ require_once __DIR__ . '/../config/database.php';
 
 class SparepartKeluarController {
     private static function uploadImage() {
-        if (empty($_FILES['images']) || !isset($_FILES['images']['error'])) {
+        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             return null;
         }
 
-        $hasFiles = false;
-        if (is_array($_FILES['images']['error'])) {
-            foreach ($_FILES['images']['error'] as $e) {
-                if ($e === UPLOAD_ERR_OK) { $hasFiles = true; break; }
-            }
-        } elseif ($_FILES['images']['error'] === UPLOAD_ERR_OK) {
-            $hasFiles = true;
-        }
+        $file = $_FILES['image'];
+        $allowed = array('jpg', 'jpeg', 'png', 'webp');
+        $maxSize = 2 * 1024 * 1024;
 
-        if (!$hasFiles) {
-            return null;
-        }
-
-        $paths = uploadMultipleImages($_FILES['images'], 5);
-        if ($paths === '__FLASH_SET__') {
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed)) {
+            flash('error', 'Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
             return '__FLASH_SET__';
         }
-        return encodeImages($paths);
+
+        if ($file['size'] > $maxSize) {
+            flash('error', 'Ukuran foto maksimal 2MB.');
+            return '__FLASH_SET__';
+        }
+
+        $uploadDir = __DIR__ . '/../public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = time() . '_' . bin2hex(openssl_random_pseudo_bytes(4)) . '.' . $ext;
+        $convertedPath = convertToWebp($file['tmp_name'], $uploadDir, $filename);
+
+        if (!$convertedPath) {
+            flash('error', 'Gagal menyimpan foto.');
+            return '__FLASH_SET__';
+        }
+
+        $webpName = pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+        return 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $webpName;
     }
 
     private static function findNonAset($db, $jenis, $type, $merk, $status) {
@@ -34,11 +46,11 @@ class SparepartKeluarController {
         return $stmt->fetch();
     }
 
-    private static function copyNonAsetRow($base, $status, $qty, $imageVal = null) {
+    private static function copyNonAsetRow($base, $status, $qty, $imagePath = null) {
         return array(
             $base['user_id'], $base['kategori'], $base['jenis_penggunaan'], $base['lokasi_penyimpanan'],
             $base['jenis_sparepart'], $base['type_sparepart'], $qty, $base['tanggal'], $base['merk'],
-            $base['pic'], $base['department'], $status, $base['keterangan'], $imageVal ?: $base['image']
+            $base['pic'], $base['department'], $status, $base['keterangan'], $imagePath ?: $base['image']
         );
     }
 
@@ -102,29 +114,38 @@ class SparepartKeluarController {
         $terpakaiRow = self::findNonAset($db, $jenis_sparepart, $type_sparepart, $merk, 'Terpakai');
         $hasExisting = $tersediaRow || $terpakaiRow;
 
-        $imageVal = null;
-        if (!empty($_FILES['images']) && isset($_FILES['images']['error'])) {
-            $hasFiles = false;
-            if (is_array($_FILES['images']['error'])) {
-                foreach ($_FILES['images']['error'] as $e) {
-                    if ($e === UPLOAD_ERR_OK) { $hasFiles = true; break; }
-                }
-            } elseif ($_FILES['images']['error'] === UPLOAD_ERR_OK) {
-                $hasFiles = true;
+        $imagePath = null;
+        if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['image'];
+            $allowed = array('jpg', 'jpeg', 'png', 'webp');
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, $allowed)) {
+                flash('error', 'Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+                redirect('sparepart_keluar.php');
             }
-            if ($hasFiles) {
-                $paths = uploadMultipleImages($_FILES['images'], 5);
-                if ($paths === '__FLASH_SET__') { redirect('sparepart_keluar.php'); }
-                $imageVal = encodeImages($paths);
+            if ($file['size'] > 2 * 1024 * 1024) {
+                flash('error', 'Ukuran foto maksimal 2MB.');
+                redirect('sparepart_keluar.php');
+            }
+            $uploadDir = __DIR__ . '/../public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/';
+            if (!is_dir($uploadDir)) { mkdir($uploadDir, 0755, true); }
+            $filename = time() . '_' . bin2hex(openssl_random_pseudo_bytes(4)) . '.' . $ext;
+            $convertedPath = convertToWebp($file['tmp_name'], $uploadDir, $filename);
+            if ($convertedPath) {
+                $webpName = pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+                $imagePath = 'public/uploads/spareparts/' . date('Y') . '/' . date('m') . '/' . $webpName;
+            } else {
+                flash('error', 'Gagal menyimpan foto.');
+                redirect('sparepart_keluar.php');
             }
         }
 
-        if (!$hasExisting && !$imageVal) {
-            flash('error', 'Foto barang wajib diupload untuk item baru (format JPG/PNG/WebP, maks 2MB, max 5 foto).');
+        if (!$hasExisting && !$imagePath) {
+            flash('error', 'Foto barang wajib diupload untuk item baru (format JPG/PNG/WebP, maks 2MB).');
             redirect('sparepart_keluar.php');
         }
 
-        if (!isAdmin() && $status_lama !== $status_baru && !$imageVal) {
+        if (!isAdmin() && $status_lama !== $status_baru && !$imagePath) {
             flash('error', 'Foto barang wajib diupload untuk perubahan status (kondisi barang saat ini).');
             redirect('sparepart_keluar.php');
         }
@@ -153,7 +174,7 @@ class SparepartKeluarController {
             }
 
             $db->prepare("INSERT INTO status_approvals (sparepart_id, user_id, tipe_transaksi, kategori, type_sparepart, status_lama, status_baru, quantity, pic, department, tanggal, keterangan, image, status) VALUES (?, ?, ?, 'Non-Aset', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')")
-                ->execute(array($approvalSparepartId, $user['id'], $tipeTransaksi, $type_sparepart, $status_lama, $status_baru, $quantity, $pic, $department, $tanggal, $keterangan, $imageVal));
+                ->execute(array($approvalSparepartId, $user['id'], $tipeTransaksi, $type_sparepart, $status_lama, $status_baru, $quantity, $pic, $department, $tanggal, $keterangan, $imagePath));
             flash('success', 'Permintaan perubahan status telah dikirim. Menunggu persetujuan admin.');
             redirect('sparepart_keluar.php');
         }
@@ -179,7 +200,7 @@ class SparepartKeluarController {
                         $db->prepare("UPDATE spareparts SET quantity = ? WHERE id = ?")
                             ->execute(array($terpakaiQty + $quantity, $terpakaiRow['id']));
                     } else {
-                        $sparepartId = self::insertNonAsetRow($db, self::copyNonAsetRow($baseRow, 'Terpakai', $quantity, $imageVal));
+                        $sparepartId = self::insertNonAsetRow($db, self::copyNonAsetRow($baseRow, 'Terpakai', $quantity, $imagePath));
                     }
 
                 } elseif ($status_lama === 'Terpakai' && $status_baru === 'Tersedia') {
@@ -191,7 +212,7 @@ class SparepartKeluarController {
                             ->execute(array($tersediaQty + $quantity, $tersediaRow['id']));
                         $sparepartId = $tersediaRow['id'];
                     } else {
-                        $sparepartId = self::insertNonAsetRow($db, self::copyNonAsetRow($baseRow, 'Tersedia', $quantity, $imageVal));
+                        $sparepartId = self::insertNonAsetRow($db, self::copyNonAsetRow($baseRow, 'Tersedia', $quantity, $imagePath));
                     }
 
                     $newTerpakai = $terpakaiQty - $quantity;
@@ -209,19 +230,19 @@ class SparepartKeluarController {
                             ->execute(array($tersediaQty + $quantity, $pic, $department, $keterangan, $tanggal, $tersediaRow['id']));
                         $sparepartId = $tersediaRow['id'];
                     } else {
-                        $sparepartId = self::insertNonAsetRow($db, self::copyNonAsetRow($baseRow, 'Tersedia', $quantity, $imageVal));
+                        $sparepartId = self::insertNonAsetRow($db, self::copyNonAsetRow($baseRow, 'Tersedia', $quantity, $imagePath));
                     }
                 }
 
             } else {
-                $sparepartId = self::insertNonAsetRow($db, array($user['id'], $kategori, $jenis_penggunaan, $lokasi_penyimpanan, $jenis_sparepart, $type_sparepart, $quantity, $tanggal, $merk, $pic, $department, $status_baru, $keterangan, $imageVal));
+                $sparepartId = self::insertNonAsetRow($db, array($user['id'], $kategori, $jenis_penggunaan, $lokasi_penyimpanan, $jenis_sparepart, $type_sparepart, $quantity, $tanggal, $merk, $pic, $department, $status_baru, $keterangan, $imagePath));
             }
 
             $deltaLabel = ($tipeTransaksi === 'Barang Keluar' ? '-' : '+') . $quantity;
             $logKeterangan = trim($keterangan . ' [' . $deltaLabel . ']');
 
             $stmtLog = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, image, tipe_transaksi, status_lama, status_baru, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmtLog->execute(array($sparepartId, $user['id'], $imageVal, $tipeTransaksi, $status_lama, $status_baru, $pic, $department, $tanggal, $logKeterangan));
+            $stmtLog->execute(array($sparepartId, $user['id'], $imagePath, $tipeTransaksi, $status_lama, $status_baru, $pic, $department, $tanggal, $logKeterangan));
 
             $db->commit();
             flash('success', $quantity . ' sparepart berhasil dicatat sebagai ' . $tipeTransaksi . '.');
@@ -244,11 +265,11 @@ class SparepartKeluarController {
         }
 
         $user = $_SESSION['user'];
-        $imageVal = self::uploadImage();
+        $imagePath = self::uploadImage();
 
-        if (!$imageVal || $imageVal === '__FLASH_SET__') {
-            if ($imageVal !== '__FLASH_SET__') {
-                flash('error', 'Foto barang wajib diupload (format JPG/PNG/WebP, maks 2MB per foto, max 5 foto).');
+        if (!$imagePath || $imagePath === '__FLASH_SET__') {
+            if ($imagePath !== '__FLASH_SET__') {
+                flash('error', 'Foto barang wajib diupload (format JPG/PNG/WebP, maks 2MB).');
             }
             redirect('sparepart_keluar.php');
         }
@@ -296,7 +317,7 @@ class SparepartKeluarController {
             }
 
             $db->prepare("INSERT INTO status_approvals (sparepart_id, user_id, tipe_transaksi, kategori, type_sparepart, status_lama, status_baru, quantity, pic, department, tanggal, keterangan, image, status) VALUES (?, ?, ?, 'Aset', ?, ?, ?, 1, ?, ?, ?, ?, ?, 'pending')")
-                ->execute(array($sparepartId, $user['id'], $tipeTransaksi, $sparepart['type_sparepart'], $status_lama, $status_baru, $pic, $department, $tanggal, $keterangan, $imageVal));
+                ->execute(array($sparepartId, $user['id'], $tipeTransaksi, $sparepart['type_sparepart'], $status_lama, $status_baru, $pic, $department, $tanggal, $keterangan, $imagePath));
             flash('success', 'Permintaan perubahan status telah dikirim. Menunggu persetujuan admin.');
             redirect('sparepart_keluar.php');
         }
@@ -307,7 +328,7 @@ class SparepartKeluarController {
                 ->execute(array($status_baru, $pic, $department, $keterangan, $sparepartId));
 
             $stmtLog = $db->prepare("INSERT INTO logbooks (sparepart_id, user_id, image, tipe_transaksi, status_lama, status_baru, pic_penerima, department, tanggal, keterangan_log) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmtLog->execute(array($sparepartId, $user['id'], $imageVal, $tipeTransaksi, $status_lama, $status_baru, $pic, $department, $tanggal, $keterangan));
+            $stmtLog->execute(array($sparepartId, $user['id'], $imagePath, $tipeTransaksi, $status_lama, $status_baru, $pic, $department, $tanggal, $keterangan));
 
             $db->commit();
             flash('success', 'Status sparepart berhasil diubah menjadi ' . $status_baru . '.');
