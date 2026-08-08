@@ -25,6 +25,12 @@ define('DB_USER', isset($_ENV['DB_USER']) ? $_ENV['DB_USER'] : 'root');
 define('DB_PASS', isset($_ENV['DB_PASS']) ? $_ENV['DB_PASS'] : '');
 define('APP_URL', isset($_ENV['APP_URL']) ? $_ENV['APP_URL'] : 'http://localhost');
 $scriptPath = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])) : '';
+if ($scriptPath === '/' || $scriptPath === '') {
+    $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    if (preg_match('#^/elogbook(/|$)#', $requestUri, $m)) {
+        $scriptPath = '/elogbook';
+    }
+}
 define('APP_BASE_PATH', ($scriptPath === '/' || $scriptPath === '') ? '' : $scriptPath);
 define('APP_NAME', isset($_ENV['APP_NAME']) ? $_ENV['APP_NAME'] : 'App');
 
